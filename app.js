@@ -47,6 +47,18 @@ const POSITION_WEIGHTS = {
   "HOLDER":{awareness:.5,hands:.3,agility:.2}
 };
 
+// Skills we rate (maps to state.players[*].ratings keys)
+const SKILLS = [
+  { key: 'speed',     label: 'Speed' },
+  { key: 'strength',  label: 'Strength' },
+  { key: 'agility',   label: 'Agility' },
+  { key: 'tackling',  label: 'Tackling' },
+  { key: 'awareness', label: 'Awareness' },
+  { key: 'hands',     label: 'Hands' },
+  { key: 'throwing',  label: 'Throwing' },
+  { key: 'kicking',   label: 'Kicking' },
+];
+
 // ------------------ State / Utils ------------------
 const DEFAULT_STATE = { settings: { requiredPractices: 8 }, players: [], attendance: [], ratings: [] };
 
@@ -193,8 +205,8 @@ function injectCompactAddStyles(){
       gap:12px;
       max-width:640px;
       margin:0 auto;
-      align-content:start;         /* <— key line */
-      grid-auto-rows:max-content;  /* <— key line */
+      align-content:start;
+      grid-auto-rows:max-content;
     }
     .screen-body label{display:grid;gap:6px;margin:0;align-self:start}
     .screen-body label span{font-size:14px;font-weight:600;color:#222}
@@ -249,10 +261,74 @@ function applyIOSQuickAddTheme(){
   forceCompactQuickAddElements();
 }
 
+function injectRatingsStyles(){
+  if (document.getElementById('jfc-ratings-style')) return;
+  const s = document.createElement('style');
+  s.id = 'jfc-ratings-style';
+  s.textContent = `
+    /* Full screen shell (reuse your .screen layout) */
+    #ratingsScreen.screen.hidden{display:none}
+    #ratingsScreen.screen{
+      position:fixed; inset:0; background:#fff; z-index:1001;
+      display:grid; grid-template-rows:auto 1fr auto;
+    }
+    #ratingsScreen .screen-header{
+      position:sticky; top:0;
+      display:flex; align-items:center; justify-content:center;
+      padding:12px 16px; background:#fff; border-bottom:1px solid #e5e5ea;
+    }
+    #ratingsScreen .screen-header h1{margin:0; font-size:22px; font-weight:800; letter-spacing:.3px}
+    #ratingsScreen .screen-header .sub{font-size:14px; color:#555; margin-top:2px; text-align:center}
+    #ratingsScreen .closeX{
+      position:absolute; right:12px; top:8px; width:32px; height:32px; line-height:28px; text-align:center;
+      border-radius:50%; border:1px solid #e5e5ea; background:#fff; font-size:20px; cursor:pointer;
+    }
+
+    #ratingsScreen .screen-body{
+      padding:18px 18px 10px; max-width:760px; margin:0 auto;
+      display:grid; gap:22px; align-content:start;
+    }
+
+    .skillBlock{display:grid; gap:10px}
+    .skillTitle{font-size:28px; font-weight:700; text-align:center}
+
+    /* 5-dot row */
+    .dotRow{display:flex; justify-content:space-between; align-items:center; padding:0 12px}
+    .dot{width:18px; height:18px; border-radius:50%; background:#cfd4dc}
+    .dot.active{background:#111}
+
+    /* Slider under the dots */
+    .sliderWrap{padding:0 10px}
+    .slider{
+      width:100%; -webkit-appearance:none; appearance:none; height:4px; background:#e5e5ea; border-radius:4px; outline:none;
+    }
+    .slider::-webkit-slider-thumb{
+      -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%;
+      background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7;
+      margin-top:-12px;
+    }
+
+    #ratingsScreen .screen-footer{
+      display:flex; gap:10px; align-items:center;
+      padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa;
+      padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    }
+    #ratingsScreen .screen-footer .spacer{flex:1}
+    #ratingsScreen .screen-footer button{
+      font-size:16px; padding:10px 14px; border-radius:12px; border:1px solid #cfd4dc;
+    }
+    #ratingsScreen .primary{background:#0b5ed7;color:#fff;border-color:#0b5ed7}
+    #ratingsScreen .secondary{background:#fff;color:#111}
+  `;
+  document.head.appendChild(s);
+}
+
+
 // ------------------ UI ------------------
 document.addEventListener('DOMContentLoaded', () => {
-  // Apply compact look early
+  // Apply compact look + ratings styles early
   injectCompactAddStyles();
+  injectRatingsStyles();              // <-- added
   applyIOSQuickAddTheme();
   forceCompactQuickAddElements();
 
@@ -342,7 +418,8 @@ function renderPlayers(){
       <button data-act="edit">Edit</button>
     `;
     row.querySelector('[data-act="edit"]').addEventListener('click',()=>openPlayerDialog(p));
-    row.querySelector('[data-act="rate"]').addEventListener('click',()=>openPlayerDialog(p,true));
+    // OPEN rating screen (full-page sliders)
+    row.querySelector('[data-act="rate"]').addEventListener('click',()=>openRateScreen(p)); // <-- changed
     list.appendChild(row);
   });
   $('#playersList').innerHTML=''; $('#playersList').appendChild(list);
@@ -501,3 +578,101 @@ async function importData(e){
 
 // ------------------ PWA ------------------
 if ('serviceWorker' in navigator) window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js'));
+
+// ------------------ Rating Screen (full-page sliders) ------------------
+function ensureRatingsScreen(){
+  if (document.getElementById('ratingsScreen')) return document.getElementById('ratingsScreen');
+
+  const wrap = document.createElement('div');
+  wrap.id = 'ratingsScreen';
+  wrap.className = 'screen hidden';
+  wrap.innerHTML = `
+    <div class="screen-header">
+      <div>
+        <h1>Player Rating</h1>
+        <div class="sub" id="rateSub"></div>
+      </div>
+      <button class="closeX" id="rateClose">×</button>
+    </div>
+    <div class="screen-body" id="rateBody"></div>
+    <div class="screen-footer">
+      <button class="secondary" id="rateCancel">Cancel</button>
+      <div class="spacer"></div>
+      <button class="primary" id="rateSave">Save</button>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+
+  wrap.querySelector('#rateClose').addEventListener('click', closeRateScreen);
+  wrap.querySelector('#rateCancel').addEventListener('click', closeRateScreen);
+  wrap.querySelector('#rateSave').addEventListener('click', saveRatingsAndClose);
+
+  return wrap;
+}
+
+let _ratingPlayer = null;
+
+function openRateScreen(player){
+  injectRatingsStyles();
+  const scr = ensureRatingsScreen();
+  _ratingPlayer = player;
+
+  const jersey = player.jersey ? ` #${player.jersey}` : '';
+  scr.querySelector('#rateSub').textContent = `${player.first} ${player.last}${jersey}`;
+
+  const body = scr.querySelector('#rateBody');
+  body.innerHTML = '';
+  SKILLS.forEach(sk=>{
+    const val = Math.max(0, Math.min(5, +(player.ratings?.[sk.key] ?? 0)));
+    const block = document.createElement('div');
+    block.className = 'skillBlock';
+    block.innerHTML = `
+      <div class="skillTitle">${sk.label}</div>
+      <div class="dotRow">
+        <div class="dot" data-v="1"></div>
+        <div class="dot" data-v="2"></div>
+        <div class="dot" data-v="3"></div>
+        <div class="dot" data-v="4"></div>
+        <div class="dot" data-v="5"></div>
+      </div>
+      <div class="sliderWrap">
+        <input type="range" min="0" max="5" step="1" class="slider" value="${val}" data-key="${sk.key}">
+      </div>
+    `;
+    body.appendChild(block);
+
+    const slider = block.querySelector('.slider');
+    const dots   = [...block.querySelectorAll('.dot')];
+    syncDots(dots, +slider.value);
+    dots.forEach(d=> d.addEventListener('click', ()=>{
+      slider.value = d.dataset.v;
+      syncDots(dots, +slider.value);
+    }));
+    slider.addEventListener('input', ()=> syncDots(dots, +slider.value));
+  });
+
+  scr.classList.remove('hidden');
+}
+
+function syncDots(dots, value){
+  dots.forEach(d => d.classList.toggle('active', +d.dataset.v <= value && value > 0));
+}
+
+function closeRateScreen(){
+  const scr = document.getElementById('ratingsScreen');
+  if (scr) scr.classList.add('hidden');
+  _ratingPlayer = null;
+}
+
+function saveRatingsAndClose(){
+  if (!_ratingPlayer) return;
+  const scr = document.getElementById('ratingsScreen');
+  const sliders = scr.querySelectorAll('.slider');
+  _ratingPlayer.ratings = _ratingPlayer.ratings || {};
+  sliders.forEach(sl=>{
+    _ratingPlayer.ratings[sl.dataset.key] = +sl.value;
+  });
+  saveLocal();
+  renderPlayers();
+  closeRateScreen();
+}
