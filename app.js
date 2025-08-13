@@ -5,196 +5,49 @@ const SHEETS_BASE = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/v
 
 function getAppsScriptUrl() {
   const preset = 'https://script.google.com/macros/s/AKfycbzURCDLEEEtuxRYjltzbQiDpnw6hqjb38hFL6h7LMxr101p4w2wG0ycOb4uDlXYVuh9/exec';
-    return localStorage.getItem('jfc_apps_script_url') || preset;
+  return localStorage.getItem('jfc_apps_script_url') || preset;
 }
 
 const POSITIONS = [["QB", "Offense"], ["RB", "Offense"], ["WR-L", "Offense"], ["WR-R", "Offense"], ["SLOT", "Offense"], ["TE", "Offense"], ["LT", "Offense"], ["LG", "Offense"], ["C", "Offense"], ["RG", "Offense"], ["RT", "Offense"], ["DE-L", "Defense"], ["DE-R", "Defense"], ["DT", "Defense"], ["NG", "Defense"], ["OLB-L", "Defense"], ["OLB-R", "Defense"], ["MLB", "Defense"], ["CB-L", "Defense"], ["CB-R", "Defense"], ["FS", "Defense"], ["SS", "Defense"], ["K", "Special Teams"], ["P", "Special Teams"], ["KR", "Special Teams"], ["PR", "Special Teams"], ["LS", "Special Teams"], ["HOLDER", "Special Teams"]];
 const POSITION_WEIGHTS = {
-  "QB": {
-    "throwing": 0.35,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "hands": 0.1,
-    "speed": 0.1
-  },
-  "RB": {
-    "speed": 0.35,
-    "agility": 0.25,
-    "awareness": 0.2,
-    "strength": 0.1,
-    "hands": 0.1
-  },
-  "WR-L": {
-    "speed": 0.35,
-    "hands": 0.3,
-    "agility": 0.2,
-    "awareness": 0.15
-  },
-  "WR-R": {
-    "speed": 0.35,
-    "hands": 0.3,
-    "agility": 0.2,
-    "awareness": 0.15
-  },
-  "SLOT": {
-    "speed": 0.35,
-    "agility": 0.3,
-    "hands": 0.2,
-    "awareness": 0.15
-  },
-  "TE": {
-    "hands": 0.3,
-    "strength": 0.25,
-    "awareness": 0.2,
-    "agility": 0.15,
-    "speed": 0.1
-  },
-  "LT": {
-    "strength": 0.4,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.15
-  },
-  "LG": {
-    "strength": 0.4,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.15
-  },
-  "C": {
-    "strength": 0.4,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.15
-  },
-  "RG": {
-    "strength": 0.4,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.15
-  },
-  "RT": {
-    "strength": 0.4,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.15
-  },
-  "DE-L": {
-    "strength": 0.35,
-    "tackling": 0.25,
-    "awareness": 0.2,
-    "agility": 0.2
-  },
-  "DE-R": {
-    "strength": 0.35,
-    "tackling": 0.25,
-    "awareness": 0.2,
-    "agility": 0.2
-  },
-  "DT": {
-    "strength": 0.4,
-    "tackling": 0.3,
-    "awareness": 0.15,
-    "agility": 0.15
-  },
-  "NG": {
-    "strength": 0.45,
-    "tackling": 0.3,
-    "awareness": 0.15,
-    "agility": 0.1
-  },
-  "OLB-L": {
-    "tackling": 0.3,
-    "awareness": 0.25,
-    "speed": 0.2,
-    "strength": 0.15,
-    "agility": 0.1
-  },
-  "OLB-R": {
-    "tackling": 0.3,
-    "awareness": 0.25,
-    "speed": 0.2,
-    "strength": 0.15,
-    "agility": 0.1
-  },
-  "MLB": {
-    "tackling": 0.35,
-    "awareness": 0.3,
-    "strength": 0.2,
-    "speed": 0.1,
-    "agility": 0.05
-  },
-  "CB-L": {
-    "speed": 0.35,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.2
-  },
-  "CB-R": {
-    "speed": 0.35,
-    "awareness": 0.25,
-    "agility": 0.2,
-    "tackling": 0.2
-  },
-  "FS": {
-    "speed": 0.3,
-    "awareness": 0.3,
-    "agility": 0.2,
-    "tackling": 0.2
-  },
-  "SS": {
-    "speed": 0.25,
-    "awareness": 0.3,
-    "tackling": 0.25,
-    "agility": 0.2
-  },
-  "K": {
-    "kicking": 0.6,
-    "awareness": 0.25,
-    "agility": 0.15
-  },
-  "P": {
-    "kicking": 0.6,
-    "awareness": 0.25,
-    "agility": 0.15
-  },
-  "KR": {
-    "speed": 0.4,
-    "agility": 0.35,
-    "awareness": 0.25
-  },
-  "PR": {
-    "speed": 0.35,
-    "agility": 0.35,
-    "awareness": 0.3
-  },
-  "LS": {
-    "awareness": 0.4,
-    "strength": 0.3,
-    "agility": 0.3
-  },
-  "HOLDER": {
-    "awareness": 0.5,
-    "hands": 0.3,
-    "agility": 0.2
-  }
+  "QB": { "throwing": 0.35, "awareness": 0.25, "agility": 0.2, "hands": 0.1, "speed": 0.1 },
+  "RB": { "speed": 0.35, "agility": 0.25, "awareness": 0.2, "strength": 0.1, "hands": 0.1 },
+  "WR-L": { "speed": 0.35, "hands": 0.3, "agility": 0.2, "awareness": 0.15 },
+  "WR-R": { "speed": 0.35, "hands": 0.3, "agility": 0.2, "awareness": 0.15 },
+  "SLOT": { "speed": 0.35, "agility": 0.3, "hands": 0.2, "awareness": 0.15 },
+  "TE": { "hands": 0.3, "strength": 0.25, "awareness": 0.2, "agility": 0.15, "speed": 0.1 },
+  "LT": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
+  "LG": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
+  "C":  { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
+  "RG": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
+  "RT": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
+  "DE-L": { "strength": 0.35, "tackling": 0.25, "awareness": 0.2, "agility": 0.2 },
+  "DE-R": { "strength": 0.35, "tackling": 0.25, "awareness": 0.2, "agility": 0.2 },
+  "DT": { "strength": 0.4, "tackling": 0.3, "awareness": 0.15, "agility": 0.15 },
+  "NG": { "strength": 0.45, "tackling": 0.3, "awareness": 0.15, "agility": 0.1 },
+  "OLB-L": { "tackling": 0.3, "awareness": 0.25, "speed": 0.2, "strength": 0.15, "agility": 0.1 },
+  "OLB-R": { "tackling": 0.3, "awareness": 0.25, "speed": 0.2, "strength": 0.15, "agility": 0.1 },
+  "MLB": { "tackling": 0.35, "awareness": 0.3, "strength": 0.2, "speed": 0.1, "agility": 0.05 },
+  "CB-L": { "speed": 0.35, "awareness": 0.25, "agility": 0.2, "tackling": 0.2 },
+  "CB-R": { "speed": 0.35, "awareness": 0.25, "agility": 0.2, "tackling": 0.2 },
+  "FS": { "speed": 0.3, "awareness": 0.3, "agility": 0.2, "tackling": 0.2 },
+  "SS": { "speed": 0.25, "awareness": 0.3, "tackling": 0.25, "agility": 0.2 },
+  "K":  { "kicking": 0.6, "awareness": 0.25, "agility": 0.15 },
+  "P":  { "kicking": 0.6, "awareness": 0.25, "agility": 0.15 },
+  "KR": { "speed": 0.4, "agility": 0.35, "awareness": 0.25 },
+  "PR": { "speed": 0.35, "agility": 0.35, "awareness": 0.3 },
+  "LS": { "awareness": 0.4, "strength": 0.3, "agility": 0.3 },
+  "HOLDER": { "awareness": 0.5, "hands": 0.3, "agility": 0.2 }
 };
 
-const DEFAULT_STATE = {
-  settings: { requiredPractices: 8 },
-  players: [],
-  attendance: [],
-  ratings: []
-};
+const DEFAULT_STATE = { settings: { requiredPractices: 8 }, players: [], attendance: [], ratings: [] };
 
 function loadLocal(){
   const raw = localStorage.getItem('jfc_state');
   if(!raw) return structuredClone(DEFAULT_STATE);
   try{ return JSON.parse(raw); }catch(e){ return structuredClone(DEFAULT_STATE); }
 }
-function saveLocal(){
-  localStorage.setItem('jfc_state', JSON.stringify(state));
-}
+function saveLocal(){ localStorage.setItem('jfc_state', JSON.stringify(state)); }
 let state = loadLocal();
 
 const $ = (s)=>document.querySelector(s);
@@ -307,10 +160,10 @@ async function cloudSave(){
 
   const payload = { players: playersRows, attendance: attendanceOut, ratings: ratingsOut };
   const res = await fetch(url, {
-  method: 'POST',
-  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-  body: JSON.stringify(payload)
-});
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
   if(!res.ok) throw new Error('Cloud save failed');
   return await res.json();
 }
@@ -463,31 +316,43 @@ function openPlayerDialog(player=null, ratingsOnly=false){
   };
 }
 
+// UPDATED: adds ✓ on selected button so taps are obvious
 function renderAttendance(){
   const date = $('#attDate').value || todayISO();
   const sort = $('#attSort').value;
   const list = document.createElement('div'); list.className='list';
+
   let players = state.players.slice();
-  if(sort==='name') players.sort((a,b)=> fmtName(a).localeCompare(fmtName(b)));
-  else if(sort==='position') players.sort((a,b)=> (a.primary||'').localeCompare(b.primary||'') || (a.jersey||0)-(b.jersey||0));
+  if (sort === 'name') players.sort((a,b)=> fmtName(a).localeCompare(fmtName(b)));
+  else if (sort === 'position') players.sort((a,b)=> (a.primary||'').localeCompare(b.primary||'') || (a.jersey||0)-(b.jersey||0));
   else players.sort((a,b)=> (a.jersey||0)-(b.jersey||0));
+
   players.forEach(p=>{
     const rec = state.attendance.find(a=>a.date===date && a.playerId===p.id);
     const s = rec?.status || '';
     const row = document.createElement('div'); row.className='row';
+
+    const mark = v => (s === v ? '✓ ' : '');
     row.innerHTML = `
       <div class="pill">#${p.jersey||''}</div>
       <div><strong>${fmtName(p)}</strong><br><small>${p.primary||''}${p.secondary? ' / '+p.secondary:''}</small></div>
       <div class="attBtns">
-        <button data-val="Present" ${s==='Present'?'class="active"':''}>Present</button>
-        <button data-val="Late" ${s==='Late'?'class="active"':''}>Late</button>
-        <button data-val="Absent" ${s==='Absent'?'class="active"':''}>Absent</button>
+        <button data-val="Present">${mark('Present')}Present</button>
+        <button data-val="Late">${mark('Late')}Late</button>
+        <button data-val="Absent">${mark('Absent')}Absent</button>
       </div>
     `;
-    row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ setAttendance(date, p.id, b.dataset.val); renderAttendance(); }));
+
+    row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+      setAttendance(date, p.id, b.dataset.val);
+      renderAttendance(); // re-render so the ✓ updates
+    }));
+
     list.appendChild(row);
   });
-  $('#attendanceList').innerHTML=''; $('#attendanceList').appendChild(list);
+
+  $('#attendanceList').innerHTML='';
+  $('#attendanceList').appendChild(list);
 }
 
 function renderEligibility(){
