@@ -8,58 +8,61 @@ function getAppsScriptUrl() {
   return localStorage.getItem('jfc_apps_script_url') || preset;
 }
 
-const POSITIONS = [["QB", "Offense"], ["RB", "Offense"], ["WR-L", "Offense"], ["WR-R", "Offense"], ["SLOT", "Offense"], ["TE", "Offense"], ["LT", "Offense"], ["LG", "Offense"], ["C", "Offense"], ["RG", "Offense"], ["RT", "Offense"], ["DE-L", "Defense"], ["DE-R", "Defense"], ["DT", "Defense"], ["NG", "Defense"], ["OLB-L", "Defense"], ["OLB-R", "Defense"], ["MLB", "Defense"], ["CB-L", "Defense"], ["CB-R", "Defense"], ["FS", "Defense"], ["SS", "Defense"], ["K", "Special Teams"], ["P", "Special Teams"], ["KR", "Special Teams"], ["PR", "Special Teams"], ["LS", "Special Teams"], ["HOLDER", "Special Teams"]];
+// ------------------ Positions / Weights ------------------
+const POSITIONS = [
+  ["QB","Offense"],["RB","Offense"],["WR-L","Offense"],["WR-R","Offense"],["SLOT","Offense"],["TE","Offense"],
+  ["LT","Offense"],["LG","Offense"],["C","Offense"],["RG","Offense"],["RT","Offense"],
+  ["DE-L","Defense"],["DE-R","Defense"],["DT","Defense"],["NG","Defense"],["OLB-L","Defense"],["OLB-R","Defense"],
+  ["MLB","Defense"],["CB-L","Defense"],["CB-R","Defense"],["FS","Defense"],["SS","Defense"],
+  ["K","Special Teams"],["P","Special Teams"],["KR","Special Teams"],["PR","Special Teams"],["LS","Special Teams"],["HOLDER","Special Teams"]
+];
 const POSITION_WEIGHTS = {
-  "QB": { "throwing": 0.35, "awareness": 0.25, "agility": 0.2, "hands": 0.1, "speed": 0.1 },
-  "RB": { "speed": 0.35, "agility": 0.25, "awareness": 0.2, "strength": 0.1, "hands": 0.1 },
-  "WR-L": { "speed": 0.35, "hands": 0.3, "agility": 0.2, "awareness": 0.15 },
-  "WR-R": { "speed": 0.35, "hands": 0.3, "agility": 0.2, "awareness": 0.15 },
-  "SLOT": { "speed": 0.35, "agility": 0.3, "hands": 0.2, "awareness": 0.15 },
-  "TE": { "hands": 0.3, "strength": 0.25, "awareness": 0.2, "agility": 0.15, "speed": 0.1 },
-  "LT": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
-  "LG": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
-  "C":  { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
-  "RG": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
-  "RT": { "strength": 0.4, "awareness": 0.25, "agility": 0.2, "tackling": 0.15 },
-  "DE-L": { "strength": 0.35, "tackling": 0.25, "awareness": 0.2, "agility": 0.2 },
-  "DE-R": { "strength": 0.35, "tackling": 0.25, "awareness": 0.2, "agility": 0.2 },
-  "DT": { "strength": 0.4, "tackling": 0.3, "awareness": 0.15, "agility": 0.15 },
-  "NG": { "strength": 0.45, "tackling": 0.3, "awareness": 0.15, "agility": 0.1 },
-  "OLB-L": { "tackling": 0.3, "awareness": 0.25, "speed": 0.2, "strength": 0.15, "agility": 0.1 },
-  "OLB-R": { "tackling": 0.3, "awareness": 0.25, "speed": 0.2, "strength": 0.15, "agility": 0.1 },
-  "MLB": { "tackling": 0.35, "awareness": 0.3, "strength": 0.2, "speed": 0.1, "agility": 0.05 },
-  "CB-L": { "speed": 0.35, "awareness": 0.25, "agility": 0.2, "tackling": 0.2 },
-  "CB-R": { "speed": 0.35, "awareness": 0.25, "agility": 0.2, "tackling": 0.2 },
-  "FS": { "speed": 0.3, "awareness": 0.3, "agility": 0.2, "tackling": 0.2 },
-  "SS": { "speed": 0.25, "awareness": 0.3, "tackling": 0.25, "agility": 0.2 },
-  "K":  { "kicking": 0.6, "awareness": 0.25, "agility": 0.15 },
-  "P":  { "kicking": 0.6, "awareness": 0.25, "agility": 0.15 },
-  "KR": { "speed": 0.4, "agility": 0.35, "awareness": 0.25 },
-  "PR": { "speed": 0.35, "agility": 0.35, "awareness": 0.3 },
-  "LS": { "awareness": 0.4, "strength": 0.3, "agility": 0.3 },
-  "HOLDER": { "awareness": 0.5, "hands": 0.3, "agility": 0.2 }
+  "QB":{throwing:.35,awareness:.25,agility:.2,hands:.1,speed:.1},
+  "RB":{speed:.35,agility:.25,awareness:.2,strength:.1,hands:.1},
+  "WR-L":{speed:.35,hands:.3,agility:.2,awareness:.15},
+  "WR-R":{speed:.35,hands:.3,agility:.2,awareness:.15},
+  "SLOT":{speed:.35,agility:.3,hands:.2,awareness:.15},
+  "TE":{hands:.3,strength:.25,awareness:.2,agility:.15,speed:.1},
+  "LT":{strength:.4,awareness:.25,agility:.2,tackling:.15},
+  "LG":{strength:.4,awareness:.25,agility:.2,tackling:.15},
+  "C": {strength:.4,awareness:.25,agility:.2,tackling:.15},
+  "RG":{strength:.4,awareness:.25,agility:.2,tackling:.15},
+  "RT":{strength:.4,awareness:.25,agility:.2,tackling:.15},
+  "DE-L":{strength:.35,tackling:.25,awareness:.2,agility:.2},
+  "DE-R":{strength:.35,tackling:.25,awareness:.2,agility:.2},
+  "DT":{strength:.4,tackling:.3,awareness:.15,agility:.15},
+  "NG":{strength:.45,tackling:.3,awareness:.15,agility:.1},
+  "OLB-L":{tackling:.3,awareness:.25,speed:.2,strength:.15,agility:.1},
+  "OLB-R":{tackling:.3,awareness:.25,speed:.2,strength:.15,agility:.1},
+  "MLB":{tackling:.35,awareness:.3,strength:.2,speed:.1,agility:.05},
+  "CB-L":{speed:.35,awareness:.25,agility:.2,tackling:.2},
+  "CB-R":{speed:.35,awareness:.25,agility:.2,tackling:.2},
+  "FS":{speed:.3,awareness:.3,agility:.2,tackling:.2},
+  "SS":{speed:.25,awareness:.3,tackling:.25,agility:.2},
+  "K": {kicking:.6,awareness:.25,agility:.15},
+  "P": {kicking:.6,awareness:.25,agility:.15},
+  "KR":{speed:.4,agility:.35,awareness:.25},
+  "PR":{speed:.35,agility:.35,awareness:.3},
+  "LS":{awareness:.4,strength:.3,agility:.3},
+  "HOLDER":{awareness:.5,hands:.3,agility:.2}
 };
 
+// ------------------ State / Utils ------------------
 const DEFAULT_STATE = { settings: { requiredPractices: 8 }, players: [], attendance: [], ratings: [] };
 
-function loadLocal(){
-  const raw = localStorage.getItem('jfc_state');
-  if(!raw) return structuredClone(DEFAULT_STATE);
-  try{ return JSON.parse(raw); }catch(e){ return structuredClone(DEFAULT_STATE); }
-}
+function loadLocal(){ const raw = localStorage.getItem('jfc_state'); if(!raw) return structuredClone(DEFAULT_STATE); try{ return JSON.parse(raw); }catch{ return structuredClone(DEFAULT_STATE); } }
 function saveLocal(){ localStorage.setItem('jfc_state', JSON.stringify(state)); }
 let state = loadLocal();
 
-const $ = (s)=>document.querySelector(s);
-const $$ = (s)=>Array.from(document.querySelectorAll(s));
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 function fmtName(p){ return p.last + ', ' + p.first; }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function getPositions(){ return POSITIONS.map(([k])=>k); }
 
-// ---------- Sheets I/O ----------
+// ------------------ Sheets I/O ------------------
 function rowsToPlayers(values){
-  const [head, ...rows] = values;
-  const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
+  const [head,...rows] = values; const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
   return rows.filter(r=>r.length).map(r=>({
     id: crypto.randomUUID(),
     jersey: parseInt(r[idx.Jersey]||'0'),
@@ -73,286 +76,236 @@ function rowsToPlayers(values){
 }
 function playersToRows(players){
   const head = ["Jersey","Name","Grade","PrimaryPos","SecondaryPos","Contact","Notes"];
-  const rows = players.map(p=>[p.jersey, (p.first+' '+p.last).trim(), p.grade, p.primary, p.secondary, "", ""]);
-  return [head, ...rows];
+  const rows = players.map(p=>[p.jersey,(p.first+' '+p.last).trim(),p.grade,p.primary,p.secondary,"",""]);
+  return [head,...rows];
 }
 function rowsToAttendance(values){
-  const [head, ...rows] = values;
-  const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
+  const [head,...rows] = values; const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
   return rows.filter(r=>r.length).map(r=>({
-    date: r[idx.Date]||'',
-    jersey: parseInt(r[idx.Jersey]||'0'),
-    name: r[idx.Name]||'',
-    status: r[idx.Status]||'',
-    note: r[idx.Note]||''
+    date:r[idx.Date]||'', jersey:parseInt(r[idx.Jersey]||'0'), name:r[idx.Name]||'',
+    status:r[idx.Status]||'', note:r[idx.Note]||''
   }));
 }
 function attendanceToRows(att){
   const head = ["Date","Jersey","Name","Status","Note"];
-  const rows = att.map(a=>[a.date, a.jersey, a.name, a.status, a.note||""]);
-  return [head, ...rows];
+  const rows = att.map(a=>[a.date,a.jersey,a.name,a.status,a.note||""]);
+  return [head,...rows];
 }
 function rowsToRatings(values){
-  const [head, ...rows] = values;
-  const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
+  const [head,...rows] = values; const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
   return rows.filter(r=>r.length).map(r=>({
-    jersey: parseInt(r[idx.Jersey]||'0'),
-    name: r[idx.Name]||'',
+    jersey:parseInt(r[idx.Jersey]||'0'), name:r[idx.Name]||'',
     speed:+(r[idx.Speed]||0), strength:+(r[idx.Strength]||0), agility:+(r[idx.Agility]||0),
     tackling:+(r[idx.Tackling]||0), awareness:+(r[idx.Awareness]||0), hands:+(r[idx.Hands]||0),
     throwing:+(r[idx.Throwing]||0), kicking:+(r[idx.Kicking]||0)
   }));
 }
 function ratingsToRows(items){
-  const head = ["Jersey","Name","Speed","Strength","Agility","Tackling","Awareness","Hands","Throwing","Kicking","CoachNote"];
-  const rows = items.map(r=>[r.jersey, r.name, r.speed||0, r.strength||0, r.agility||0, r.tackling||0, r.awareness||0, r.hands||0, r.throwing||0, r.kicking||0, ""]);
-  return [head, ...rows];
+  const head=["Jersey","Name","Speed","Strength","Agility","Tackling","Awareness","Hands","Throwing","Kicking","CoachNote"];
+  const rows = items.map(r=>[r.jersey,r.name,r.speed||0,r.strength||0,r.agility||0,r.tackling||0,r.awareness||0,r.hands||0,r.throwing||0,r.kicking||0,""]);
+  return [head,...rows];
 }
-
 async function readSheet(range){
   const url = `${SHEETS_BASE}/${encodeURIComponent(range)}?key=${API_KEY}`;
   const res = await fetch(url);
   if(!res.ok) throw new Error('Sheets read failed');
   return (await res.json()).values || [];
 }
-
 async function cloudLoad(){
-  const [playersV, attendanceV, ratingsV] = await Promise.all([
-    readSheet('Players'),
-    readSheet('Attendance'),
-    readSheet('Ratings')
-  ]);
+  const [playersV,attendanceV,ratingsV] = await Promise.all([readSheet('Players'),readSheet('Attendance'),readSheet('Ratings')]);
   const players = rowsToPlayers(playersV);
   const attendanceRows = rowsToAttendance(attendanceV);
   const ratingsRows = rowsToRatings(ratingsV);
 
   players.forEach(p=>{
     const r = ratingsRows.find(x=>x.jersey===p.jersey) || {};
-    p.ratings = {
-      speed:r.speed||0, strength:r.strength||0, agility:r.agility||0, tackling:r.tackling||0,
-      awareness:r.awareness||0, hands:r.hands||0, throwing:r.throwing||0, kicking:r.kicking||0
-    };
+    p.ratings = {speed:r.speed||0,strength:r.strength||0,agility:r.agility||0,tackling:r.tackling||0,awareness:r.awareness||0,hands:r.hands||0,throwing:r.throwing||0,kicking:r.kicking||0};
   });
 
   const byJersey = Object.fromEntries(players.map(p=>[p.jersey,p]));
-  const attendance = attendanceRows.map(a=>({
-    date:a.date, playerId: byJersey[a.jersey]?.id || null, status:a.status, note:a.note
-  })).filter(a=>a.playerId);
+  const attendance = attendanceRows.map(a=>({date:a.date, playerId:byJersey[a.jersey]?.id||null, status:a.status, note:a.note})).filter(a=>a.playerId);
 
-  state.players = players;
-  state.attendance = attendance;
-  state.ratings = ratingsRows;
-  saveLocal();
+  state.players = players; state.attendance = attendance; state.ratings = ratingsRows; saveLocal();
 }
-
 async function cloudSave(){
-  const url = getAppsScriptUrl();
-  if(!url) throw new Error('Apps Script URL not set (Settings tab)');
+  const url = getAppsScriptUrl(); if(!url) throw new Error('Apps Script URL not set (Settings tab)');
   const playersRows = playersToRows(state.players);
   const byId = Object.fromEntries(state.players.map(p=>[p.id,p]));
-  const attendanceRows = state.attendance.map(a=>({
-    date:a.date, jersey:byId[a.playerId]?.jersey||'', name: byId[a.playerId]? (byId[a.playerId].first+' '+byId[a.playerId].last).trim(): '', status:a.status, note:a.note||''
-  }));
+  const attendanceRows = state.attendance.map(a=>({date:a.date, jersey:byId[a.playerId]?.jersey||'', name:byId[a.playerId]? (byId[a.playerId].first+' '+byId[a.playerId].last).trim() : '', status:a.status, note:a.note||''}));
   const attendanceOut = attendanceToRows(attendanceRows);
-  const ratingsOut = ratingsToRows(state.players.map(p=>({
-    jersey:p.jersey, name:(p.first+' '+p.last).trim(), speed:p.ratings.speed||0, strength:p.ratings.strength||0, agility:p.ratings.agility||0,
-    tackling:p.ratings.tackling||0, awareness:p.ratings.awareness||0, hands:p.ratings.hands||0, throwing:p.ratings.throwing||0, kicking:p.ratings.kicking||0
-  })));
-
-  const payload = { players: playersRows, attendance: attendanceOut, ratings: ratingsOut };
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
+  const ratingsOut = ratingsToRows(state.players.map(p=>({jersey:p.jersey, name:(p.first+' '+p.last).trim(),
+    speed:p.ratings.speed||0, strength:p.ratings.strength||0, agility:p.ratings.agility||0,
+    tackling:p.ratings.tackling||0, awareness:p.ratings.awareness||0, hands:p.ratings.hands||0,
+    throwing:p.ratings.throwing||0, kicking:p.ratings.kicking||0})));
+  const payload = {players:playersRows, attendance:attendanceOut, ratings:ratingsOut};
+  const res = await fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)});
   if(!res.ok) throw new Error('Cloud save failed');
   return await res.json();
 }
 
-// ---------- Attendance / Eligibility / Depth ----------
-function getAttendance(date, playerId){
-  return state.attendance.find(a=>a.date===date && a.playerId===playerId);
-}
+// ------------------ Core logic ------------------
+function getAttendance(date, playerId){ return state.attendance.find(a=>a.date===date && a.playerId===playerId); }
 function setAttendance(date, playerId, status){
   let rec = getAttendance(date, playerId);
-  if(!rec) { rec = {date, playerId, status, note:''}; state.attendance.push(rec); }
-  else rec.status = status;
+  if(!rec){ rec = {date, playerId, status, note:''}; state.attendance.push(rec); }
+  else { rec.status = status; }
   saveLocal();
 }
 function attendedCount(playerId, refDate){
   return state.attendance.filter(a=>a.playerId===playerId && a.date < refDate && (a.status==='Present'||a.status==='Late')).length;
 }
 function eligibleStatus(playerId, refDate){
-  const need = state.settings.requiredPractices || 8;
-  const count = attendedCount(playerId, refDate);
+  const need = state.settings.requiredPractices||8; const count = attendedCount(playerId, refDate);
   if(count >= need) return {label:'Eligible', cls:'ok', count, need};
-  if(count >= Math.max(0, need-2)) return {label:'Almost', cls:'warn', count, need};
+  if(count >= Math.max(0,need-2)) return {label:'Almost', cls:'warn', count, need};
   return {label:'Ineligible', cls:'no', count, need};
 }
-function positionScore(player, pos){
-  const w = POSITION_WEIGHTS[pos] || {};
-  const r = player.ratings || {};
-  let sum = 0;
-  for(const k in w) sum += (r[k]||0) * w[k];
-  return sum;
-}
-function generateDepth(refDate, eligibleOnly=true){
-  const positions = getPositions();
-  const result = {};
-  positions.forEach(pos=>{
+function positionScore(player,pos){ const w = POSITION_WEIGHTS[pos]||{}; const r = player.ratings||{}; let sum=0; for(const k in w) sum += (r[k]||0)*w[k]; return sum; }
+function generateDepth(refDate,eligibleOnly=true){
+  const result={}; getPositions().forEach(pos=>{
     let players = state.players.slice();
-    if(eligibleOnly) players = players.filter(p=>eligibleStatus(p.id, refDate).label==='Eligible');
-    players = players
-      .map(p=>({p, score: positionScore(p, pos), pref: p.primary===pos?2: (p.secondary===pos?1:0)}))
+    if(eligibleOnly) players = players.filter(p=>eligibleStatus(p.id,refDate).label==='Eligible');
+    players = players.map(p=>({p,score:positionScore(p,pos),pref:p.primary===pos?2:(p.secondary===pos?1:0)}))
       .filter(x=>x.score>0 || x.pref>0)
-      .sort((a,b)=> (b.pref - a.pref) || (b.score - a.score) || (a.p.jersey - b.p.jersey));
+      .sort((a,b)=> (b.pref-a.pref) || (b.score-a.score) || (a.p.jersey-b.p.jersey));
     result[pos] = players.slice(0,3).map(x=>x.p);
   });
   return result;
 }
 
-// ---------- inject compact styles for Add Player (single-row inputs) ----------
+// ------------------ Compact iOS Add Player styles ------------------
 function injectCompactAddStyles(){
   if (document.getElementById('jfc-compact-add')) return;
-  const style = document.createElement('style');
-  style.id = 'jfc-compact-add';
+  const style = document.createElement('style'); style.id='jfc-compact-add';
   style.textContent = `
-    /* ===== Full-screen shell ===== */
-    .screen.hidden { display:none }
-    .screen{
-      position:fixed; inset:0; background:#fff; z-index:1000;
-      display:grid; grid-template-rows:auto 1fr auto;
+    .screen.hidden{display:none}
+    .screen{position:fixed;inset:0;background:#fff;z-index:1000;display:grid;grid-template-rows:auto 1fr auto}
+    .screen-header{position:sticky;top:0;display:flex;align-items:center;justify-content:center;padding:12px 16px;background:#fff;color:#111;border-bottom:1px solid #e5e5ea}
+    .screen-header h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.2px}
+    .screen-header .icon-btn{position:absolute;right:12px;top:8px;width:32px;height:32px;line-height:28px;text-align:center;border-radius:50%;border:1px solid #e5e5ea;background:#fff;color:#111;font-size:20px;padding:0}
+    .screen-body{padding:12px 16px 16px;display:grid;gap:12px;max-width:640px;margin:0 auto}
+    .screen-body label{display:grid;gap:6px;margin:0}
+    .screen-body label span{font-size:14px;font-weight:600;color:#222}
+    #addPlayerScreen input,#addPlayerScreen select,#addPlayerScreen textarea{
+      height:40px !important;min-height:40px !important;padding:8px 12px !important;font-size:16px !important;line-height:1.2 !important;
+      box-sizing:border-box !important;resize:none !important;-webkit-appearance:none !important;appearance:none !important;
+      border:1px solid #d9d9e0 !important;border-radius:10px !important;background:#fff !important;box-shadow:none !important
     }
-
-    /* ===== iOS-like header ===== */
-    .screen-header{
-      position:sticky; top:0;
-      display:flex; align-items:center; justify-content:center;
-      padding:12px 16px;
-      background:#fff; color:#111;
-      border-bottom:1px solid #e5e5ea;
-    }
-    .screen-header h1{
-      margin:0; font-size:18px; font-weight:600; letter-spacing:.2px;
-    }
-    .screen-header .icon-btn{
-      position:absolute; right:12px; top:8px;
-      width:32px; height:32px; line-height:28px; text-align:center;
-      border-radius:50%;
-      border:1px solid #e5e5ea; background:#fff; color:#111;
-      font-size:20px; padding:0;
-    }
-
-    /* ===== Body spacing (centered column) ===== */
-    .screen-body{
-      padding:12px 16px 16px;
-      display:grid; gap:12px;
-      max-width:640px; margin:0 auto;
-    }
-    .screen-body label{ display:grid; gap:6px; margin:0 }
-    .screen-body label span{ font-size:14px; font-weight:600; color:#222 }
-
-    /* ===== iOS-like compact fields (single-row) ===== */
-    #addPlayerScreen input,
-    #addPlayerScreen select,
-    #addPlayerScreen textarea{
-      height:40px !important;        /* compact, single-row */
-      min-height:40px !important;
-      padding:8px 12px !important;
-      font-size:16px !important;     /* prevents iOS zoom */
-      line-height:1.2 !important;
-      box-sizing:border-box !important;
-      resize:none !important;
-      -webkit-appearance:none !important;
-      appearance:none !important;
-      border:1px solid #d9d9e0 !important;
-      border-radius:10px !important;
-      background:#fff !important;
-      box-shadow:none !important;
-    }
-    #addPlayerScreen *{ min-height:unset !important } /* kill framework min-heights */
-
-    /* ===== Footer buttons ===== */
-    .screen-footer{
-      position:sticky; bottom:0;
-      display:flex; gap:10px; align-items:center;
-      padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* iOS safe area */
-    }
-    .screen-footer .spacer{ flex:1 }
-    .screen-footer button{
-      font-size:16px; padding:10px 14px; border-radius:12px; border:1px solid #cfd4dc;
-    }
-    .screen-footer .primary{ background:#0b5ed7; color:#fff; border-color:#0b5ed7 }
-    .screen-footer .secondary{ background:#fff; color:#111 }
+    #addPlayerScreen *{min-height:unset !important}
+    .screen-footer{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid #e5e5ea;background:#fafafa;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+    .screen-footer .spacer{flex:1}
+    .screen-footer button{font-size:16px;padding:10px 14px;border-radius:12px;border:1px solid #cfd4dc}
+    .screen-footer .primary{background:#0b5ed7;color:#fff;border-color:#0b5ed7}
+    .screen-footer .secondary{background:#fff;color:#111}
   `;
   document.head.appendChild(style);
 }
+function forceCompactQuickAddElements(){
+  const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
+  document.querySelectorAll(sel).forEach(el=>{
+    if (el.tagName === 'TEXTAREA') el.setAttribute('rows','1');
+    el.style.height='40px'; el.style.minHeight='40px'; el.style.padding='8px 12px';
+    el.style.fontSize='16px'; el.style.lineHeight='1.2'; el.style.boxSizing='border-box';
+    el.style.resize='none'; el.style.webkitAppearance='none'; el.style.appearance='none';
+    el.style.border='1px solid #d9d9e0'; el.style.borderRadius='10px'; el.style.background='#fff'; el.style.boxShadow='none';
+  });
+}
+function applyIOSQuickAddTheme(){
+  const scr = document.getElementById('addPlayerScreen'); if(!scr) return;
+  const header = scr.querySelector('.screen-header');
+  if (header){
+    header.style.position='sticky'; header.style.top='0'; header.style.display='flex';
+    header.style.alignItems='center'; header.style.justifyContent='center';
+    header.style.padding='12px 16px'; header.style.background='#fff';
+    header.style.color='#111'; header.style.borderBottom='1px solid #e5e5ea';
+  }
+  const title = header?.querySelector('h1'); if (title){ title.style.margin='0'; title.style.fontSize='18px'; title.style.fontWeight='600'; }
+  const close = header?.querySelector('.icon-btn, #qaClose');
+  if (close){ Object.assign(close.style,{position:'absolute',right:'12px',top:'8px',width:'32px',height:'32px',lineHeight:'28px',
+    textAlign:'center',borderRadius:'50%',border:'1px solid #e5e5ea',background:'#fff',color:'#111',fontSize:'20px',padding:'0'}); }
+  const body = scr.querySelector('.screen-body');
+  if (body){ body.style.padding='12px 16px 16px'; body.style.display='grid'; body.style.gap='12px'; body.style.maxWidth='640px'; body.style.margin='0 auto'; }
+  const footer = scr.querySelector('.screen-footer');
+  if (footer){ footer.style.position='sticky'; footer.style.bottom='0'; footer.style.display='flex'; footer.style.gap='10px';
+    footer.style.alignItems='center'; footer.style.padding='10px 16px'; footer.style.borderTop='1px solid #e5e5ea';
+    footer.style.background='#fafafa'; footer.style.paddingBottom='calc(10px + env(safe-area-inset-bottom))'; }
+  forceCompactQuickAddElements();
+}
 
-
-
-// ---------- UI ----------
+// ------------------ UI ------------------
 document.addEventListener('DOMContentLoaded', () => {
-  // 1) Compact iOS look for Add Player
-  if (typeof injectCompactAddStyles === 'function') injectCompactAddStyles();
-  if (typeof applyIOSQuickAddTheme === 'function') applyIOSQuickAddTheme();
-  if (typeof forceCompactQuickAddElements === 'function') forceCompactQuickAddElements();
+  // Apply compact look early
+  injectCompactAddStyles();
+  applyIOSQuickAddTheme();
+  forceCompactQuickAddElements();
 
-  // 2) Your existing tab wiring
-  $$('nav#tabs button').forEach(btn => btn.addEventListener('click', () => {
-    $$('nav#tabs button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    $$('.tab').forEach(s => s.classList.remove('active'));
-    document.querySelector('#tab-' + tab).classList.add('active');
-    render();
-  }));
+  // Tabs
+  $$('nav#tabs button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      $$('nav#tabs button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      $$('.tab').forEach(s=>s.classList.remove('active'));
+      document.querySelector('#tab-'+tab)?.classList.add('active');
+      render();
+    });
+  });
 
-  // 3) ...keep the rest of your existing initialization here
-  // (buttons, cloud load/save, attendance hooks, etc.)
-});
+  // Buttons: Add Player -> full-screen
+  $('#btnAddPlayer')?.addEventListener('click', ()=>openQuickAdd());
 
+  // Export / Import / Reset
+  $('#btnExport')?.addEventListener('click', exportData);
+  $('#btnExport2')?.addEventListener('click', exportData);
+  $('#btnImport')?.addEventListener('click', ()=>$('#fileImport')?.click());
+  $('#btnImport2')?.addEventListener('click', ()=>$('#fileImport2')?.click());
+  $('#fileImport')?.addEventListener('change', importData);
+  $('#fileImport2')?.addEventListener('change', importData);
+  $('#btnReset')?.addEventListener('click', ()=>{
+    if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state = loadLocal(); render(); }
+  });
 
+  // Cloud
+  $('#btnCloudLoad')?.addEventListener('click', async ()=>{
+    try{ await cloudLoad(); alert('Loaded from Sheets'); render(); }catch(e){ alert(e.message); }
+  });
+  $('#btnCloudSave')?.addEventListener('click', async ()=>{
+    try{ await cloudSave(); alert('Saved to Sheets'); }catch(e){ alert(e.message); }
+  });
 
-  // OPEN full-screen quick add instead of modal
-  const addBtn = $('#btnAddPlayer');
-  if (addBtn) addBtn.addEventListener('click',()=>openQuickAdd());
-
-  $('#btnExport')?.addEventListener('click',()=>exportData());
-  $('#btnExport2')?.addEventListener('click',()=>exportData());
-  $('#btnImport')?.addEventListener('click',()=>$('#fileImport').click());
-  $('#btnImport2')?.addEventListener('click',()=>$('#fileImport2').click());
-  $('#fileImport')?.addEventListener('change',importData);
-  $('#fileImport2')?.addEventListener('change',importData);
-  $('#btnReset')?.addEventListener('click',()=>{ if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state=loadLocal(); render(); } });
-
-  $('#btnCloudLoad')?.addEventListener('click', async ()=>{ try{ await cloudLoad(); alert('Loaded from Sheets'); render(); } catch(e){ alert(e.message); } });
-  $('#btnCloudSave')?.addEventListener('click', async ()=>{ try{ await cloudSave(); alert('Saved to Sheets'); } catch(e){ alert(e.message); } });
-
-  const attDate = $('#attDate');
-  if (attDate) attDate.value = todayISO();
-  $('#btnMarkAllAbsent')?.addEventListener('click',()=>{ const d=$('#attDate').value; state.players.forEach(p=> setAttendance(d,p.id,'Absent')); renderAttendance(); });
+  // Attendance defaults & controls
+  const attDate = $('#attDate'); if(attDate) attDate.value = todayISO();
+  $('#btnMarkAllAbsent')?.addEventListener('click', ()=>{
+    const d = $('#attDate')?.value || todayISO();
+    state.players.forEach(p=> setAttendance(d,p.id,'Absent'));
+    renderAttendance();
+  });
   $('#attSort')?.addEventListener('change', renderAttendance);
   $('#attDate')?.addEventListener('change', renderAttendance);
 
+  // Settings
   const urlInput = $('#appsScriptUrl');
-  if (urlInput) {
+  if (urlInput){
     urlInput.value = getAppsScriptUrl();
-    urlInput.addEventListener('change', e=>{ localStorage.setItem('jfc_apps_script_url', e.target.value.trim()); });
+    urlInput.addEventListener('change', e=> localStorage.setItem('jfc_apps_script_url', e.target.value.trim()));
   }
-  $('#requiredPractices')?.addEventListener('change', e=>{ state.settings.requiredPractices = Math.max(1, +e.target.value||8); saveLocal(); render(); });
+  $('#requiredPractices')?.addEventListener('change', e=>{
+    state.settings.requiredPractices = Math.max(1, +e.target.value || 8);
+    saveLocal(); render();
+  });
 
-  // Quick Add screen buttons (guard in case the HTML isn't present)
-  if (document.getElementById('addPlayerScreen')) {
-    $('#qaClose')?.addEventListener('click', () => closeQuickAdd());
-    $('#qaCancel')?.addEventListener('click', () => closeQuickAdd());
-    $('#qaSaveAdd')?.addEventListener('click', () => saveQuickAdd(false)); // keep screen open
-    $('#qaSaveClose')?.addEventListener('click', () => saveQuickAdd(true));  // close after save
+  // Quick Add screen buttons (if screen exists)
+  if (document.getElementById('addPlayerScreen')){
+    $('#qaClose')?.addEventListener('click', ()=>closeQuickAdd());
+    $('#qaCancel')?.addEventListener('click', ()=>closeQuickAdd());
+    $('#qaSaveAdd')?.addEventListener('click', ()=>saveQuickAdd(false)); // stay open
+    $('#qaSaveClose')?.addEventListener('click', ()=>saveQuickAdd(true)); // close
   }
 
   render();
 });
 
+// ------------------ Renderers ------------------
 function render(){
   renderPlayers();
   renderAttendance();
@@ -360,15 +313,14 @@ function render(){
   renderDepth();
   renderSettings();
 }
-
 function renderPlayers(){
   const list = document.createElement('div'); list.className='list';
-  state.players.sort((a,b)=> (a.jersey||0)-(b.jersey||0));
+  state.players.sort((a,b)=>(a.jersey||0)-(b.jersey||0));
   state.players.forEach(p=>{
     const row = document.createElement('div'); row.className='row';
     row.innerHTML = `
       <div class="pill">#${p.jersey||''}</div>
-      <div><strong>${fmtName(p)}</strong><br><small>${p.primary||''}${p.secondary? ' / '+p.secondary:''}</small></div>
+      <div><strong>${fmtName(p)}</strong><br><small>${p.primary||''}${p.secondary?' / '+p.secondary:''}</small></div>
       <button class="secondary" data-act="rate">Rate</button>
       <button data-act="edit">Edit</button>
     `;
@@ -376,30 +328,24 @@ function renderPlayers(){
     row.querySelector('[data-act="rate"]').addEventListener('click',()=>openPlayerDialog(p,true));
     list.appendChild(row);
   });
-  $('#playersList').innerHTML = ''; $('#playersList').appendChild(list);
+  $('#playersList').innerHTML=''; $('#playersList').appendChild(list);
 
-  const pos = getPositions();
-  const prim = $('#pPrimary'), sec=$('#pSecondary'); 
-  if (prim && sec) {
-    prim.innerHTML=''; 
-    sec.innerHTML='<option value="">(none)</option>';
-    pos.forEach(k=>{ 
-      prim.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); 
-      sec.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); 
+  const pos = getPositions(); const prim = $('#pPrimary'), sec = $('#pSecondary');
+  if (prim && sec){
+    prim.innerHTML=''; sec.innerHTML='<option value="">(none)</option>';
+    pos.forEach(k=>{
+      prim.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`);
+      sec.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`);
     });
   }
 }
-
-// Keep existing dialog for edit/rate
 function openPlayerDialog(player=null, ratingsOnly=false){
-  const d = $('#playerDialog');
-  if (!d) return;
-  d.classList.add('fullscreen-form'); // (legacy dialog styling if used)
+  const d = $('#playerDialog'); if(!d) return;
   $('#playerDialogTitle').textContent = player? (ratingsOnly?'Update Ratings':'Edit Player') : 'Add Player';
   $('#pJersey').value = player?.jersey ?? '';
-  $('#pFirst').value = player?.first ?? '';
-  $('#pLast').value = player?.last ?? '';
-  $('#pGrade').value = player?.grade ?? '';
+  $('#pFirst').value  = player?.first ?? '';
+  $('#pLast').value   = player?.last ?? '';
+  $('#pGrade').value  = player?.grade ?? '';
   $('#pPrimary').value = player?.primary ?? '';
   $('#pSecondary').value = player?.secondary ?? '';
   const r = player?.ratings || {};
@@ -407,12 +353,11 @@ function openPlayerDialog(player=null, ratingsOnly=false){
   set('rSpeed', r.speed); set('rStrength', r.strength); set('rAgility', r.agility); set('rTackling', r.tackling);
   set('rAwareness', r.awareness); set('rHands', r.hands); set('rThrowing', r.throwing); set('rKicking', r.kicking);
 
-  const basicGrid = $$('#playerDialog .grid')[0];
-  if (basicGrid) basicGrid.style.display = ratingsOnly? 'none':'grid';
+  const basic = $$('#playerDialog .grid')[0]; if (basic) basic.style.display = ratingsOnly ? 'none' : 'grid';
 
   d.showModal?.();
   $('#btnSavePlayer').onclick = ()=>{
-    if(!player && ratingsOnly) { d.close?.(); return; }
+    if(!player && ratingsOnly){ d.close?.(); return; }
     const data = {
       jersey: parseInt($('#pJersey').value||'0'),
       first: $('#pFirst').value.trim(),
@@ -421,84 +366,67 @@ function openPlayerDialog(player=null, ratingsOnly=false){
       primary: $('#pPrimary').value || '',
       secondary: $('#pSecondary').value || '',
       ratings: {
-        speed: +($('#rSpeed').value||0),
-        strength: +($('#rStrength').value||0),
-        agility: +($('#rAgility').value||0),
-        tackling: +($('#rTackling').value||0),
-        awareness: +($('#rAwareness').value||0),
-        hands: +($('#rHands').value||0),
-        throwing: +($('#rThrowing').value||0),
-        kicking: +($('#rKicking').value||0),
+        speed:+($('#rSpeed').value||0), strength:+($('#rStrength').value||0), agility:+($('#rAgility').value||0),
+        tackling:+($('#rTackling').value||0), awareness:+($('#rAwareness').value||0), hands:+($('#rHands').value||0),
+        throwing:+($('#rThrowing').value||0), kicking:+($('#rKicking').value||0)
       }
     };
-    if(player) { Object.assign(player, data); }
-    else { state.players.push({id: crypto.randomUUID(), ...data}); }
+    if (player) Object.assign(player, data); else state.players.push({id:crypto.randomUUID(), ...data});
     saveLocal(); d.close?.(); render();
   };
 }
-
-// ---------- Attendance (with ✓ indicator) ----------
 function renderAttendance(){
   const date = $('#attDate')?.value || todayISO();
   const sort = $('#attSort')?.value || 'jersey';
   const list = document.createElement('div'); list.className='list';
 
   let players = state.players.slice();
-  if (sort === 'name') players.sort((a,b)=> fmtName(a).localeCompare(fmtName(b)));
-  else if (sort === 'position') players.sort((a,b)=> (a.primary||'').localeCompare(b.primary||'') || (a.jersey||0)-(b.jersey||0));
-  else players.sort((a,b)=> (a.jersey||0)-(b.jersey||0));
+  if (sort==='name') players.sort((a,b)=>fmtName(a).localeCompare(fmtName(b)));
+  else if (sort==='position') players.sort((a,b)=> (a.primary||'').localeCompare(b.primary||'') || (a.jersey||0)-(b.jersey||0));
+  else players.sort((a,b)=>(a.jersey||0)-(b.jersey||0));
 
   players.forEach(p=>{
     const rec = state.attendance.find(a=>a.date===date && a.playerId===p.id);
     const s = rec?.status || '';
     const row = document.createElement('div'); row.className='row';
-    const mark = v => (s === v ? '✓ ' : '');
+    const mark = v => (s===v ? '✓ ' : '');
     row.innerHTML = `
       <div class="pill">#${p.jersey||''}</div>
-      <div><strong>${fmtName(p)}</strong><br><small>${p.primary||''}${p.secondary? ' / '+p.secondary:''}</small></div>
+      <div><strong>${fmtName(p)}</strong><br><small>${p.primary||''}${p.secondary?' / '+p.secondary:''}</small></div>
       <div class="attBtns">
         <button data-val="Present">${mark('Present')}Present</button>
         <button data-val="Late">${mark('Late')}Late</button>
         <button data-val="Absent">${mark('Absent')}Absent</button>
       </div>
     `;
-    row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
-      setAttendance(date, p.id, b.dataset.val);
-      renderAttendance();
+    row.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+      setAttendance(date,p.id,b.dataset.val); renderAttendance();
     }));
     list.appendChild(row);
   });
 
-  const container = $('#attendanceList');
-  if (container) { container.innerHTML=''; container.appendChild(list); }
+  $('#attendanceList').innerHTML=''; $('#attendanceList').appendChild(list);
 }
-
 function renderEligibility(){
   $('#gameDate').value ||= todayISO();
-  const d = $('#gameDate').value;
-  const need = state.settings.requiredPractices || 8;
+  const d = $('#gameDate').value; const need = state.settings.requiredPractices||8;
   const table = document.createElement('table');
   table.innerHTML = `<thead><tr><th>Jersey</th><th>Name</th><th>Count &lt; ${d}</th><th>Needed to ${need}</th><th>Status</th></tr></thead>`;
   const tb = document.createElement('tbody');
-  state.players.slice().sort((a,b)=> (a.jersey||0)-(b.jersey||0)).forEach(p=>{
-    const st = eligibleStatus(p.id, d);
+  state.players.slice().sort((a,b)=>(a.jersey||0)-(b.jersey||0)).forEach(p=>{
+    const st = eligibleStatus(p.id,d);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>#${p.jersey||''}</td><td>${fmtName(p)}</td><td>${st.count}</td><td>${Math.max(0,(need-st.count))}</td><td><span class="badge ${st.cls}">${st.label}</span></td>`;
     tb.appendChild(tr);
   });
   table.appendChild(tb);
-  const container = $('#eligibilityTable');
-  if (container) { container.innerHTML=''; container.appendChild(table); }
+  $('#eligibilityTable').innerHTML=''; $('#eligibilityTable').appendChild(table);
 }
-
 function renderDepth(){
   $('#depthGameDate').value ||= todayISO();
-  const d = $('#depthGameDate').value;
-  const only = $('#useEligibleOnly')?.checked ?? true;
-  const data = generateDepth(d, only);
-
-  const groups = {'Offense':[], 'Defense':[], 'Special Teams':[]};
-  POSITIONS.forEach(([k,g])=>{ groups[g].push(k); });
+  const d = $('#depthGameDate').value; const only = $('#useEligibleOnly')?.checked ?? true;
+  const data = generateDepth(d,only);
+  const groups = {'Offense':[], 'Defense':[], 'Special Teams':[]}; POSITIONS.forEach(([k,g])=>groups[g].push(k));
   const wrapper = document.createElement('div');
 
   Object.keys(groups).forEach(g=>{
@@ -506,236 +434,53 @@ function renderDepth(){
     const thead = document.createElement('thead'); thead.innerHTML = `<tr><th colspan="4">${g}</th></tr>`; table.appendChild(thead);
     const tb = document.createElement('tbody');
     groups[g].forEach(pos=>{
-      const picks = (data[pos]||[]);
-      const names = picks.map(p=>`#${p.jersey} ${fmtName(p)}`).concat(['','','']).slice(0,3);
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td style="width:120px"><strong>${pos}</strong></td><td>${names[0]||''}</td><td>${names[1]||''}</td><td>${names[2]||''}</td>`;
+      const picks = data[pos]||[]; const names = picks.map(p=>`#${p.jersey} ${fmtName(p)}`).concat(['','','']).slice(0,3);
+      const tr = document.createElement('tr'); tr.innerHTML = `<td style="width:120px"><strong>${pos}</strong></td><td>${names[0]||''}</td><td>${names[1]||''}</td><td>${names[2]||''}</td>`;
       tb.appendChild(tr);
     });
-    table.appendChild(tb);
-    wrapper.appendChild(table);
+    table.appendChild(tb); wrapper.appendChild(table);
   });
-  const container = $('#depthChart');
-  if (container) { container.innerHTML=''; container.appendChild(wrapper); }
+  $('#depthChart').innerHTML=''; $('#depthChart').appendChild(wrapper);
 }
-
 function renderSettings(){
-  const rp = $('#requiredPractices');
-  if (rp) rp.value = state.settings.requiredPractices || 8;
+  $('#requiredPractices').value = state.settings.requiredPractices||8;
   const div = document.createElement('div'); div.className='list';
   POSITIONS.forEach(([k,g])=>{
     const row = document.createElement('div'); row.className='row';
     row.innerHTML = `<div class="pill">${g}</div><div><strong>${k}</strong></div><div></div><div></div>`;
     div.appendChild(row);
   });
-  const container = $('#positionList');
-  if (container) { container.innerHTML=''; container.appendChild(div); }
+  $('#positionList').innerHTML=''; $('#positionList').appendChild(div);
 }
 
-// ---------- Quick Add full-screen ----------
-
-function forceCompactQuickAddElements() {
-  const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
-  document.querySelectorAll(sel).forEach(el => {
-    // Make textareas behave like single-row inputs too
-    if (el.tagName === 'TEXTAREA') el.setAttribute('rows', '1');
-    // Nuke any big sizing coming from global CSS/framework
-    el.setAttribute('style',
-      'height:34px !important;' +
-      'min-height:34px !important;' +
-      'padding:4px 8px !important;' +
-      'font-size:16px !important;' +   // avoids iOS zoom
-      'line-height:1.2 !important;' +
-      'box-sizing:border-box !important;' +
-      'resize:none !important;' +
-      '-webkit-appearance:none !important;' +
-      'appearance:none !important;' +
-      'border:1px solid #cfd4dc !important;' +
-      'border-radius:8px !important;' +
-      'background:#fff !important;'
-    );
-  });
-}
-
-// Force single-row sizing on all fields inside the Add Player screen
-function forceCompactQuickAddElements() {
-  const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
-  document.querySelectorAll(sel).forEach(el => {
-    if (el.tagName === 'TEXTAREA') el.setAttribute('rows', '1');
-    el.style.height = '40px';
-    el.style.minHeight = '40px';
-    el.style.padding = '8px 12px';
-    el.style.fontSize = '16px';          // avoids iOS zoom
-    el.style.lineHeight = '1.2';
-    el.style.boxSizing = 'border-box';
-    el.style.resize = 'none';
-    el.style.webkitAppearance = 'none';
-    el.style.appearance = 'none';
-    el.style.border = '1px solid #d9d9e0';
-    el.style.borderRadius = '10px';
-    el.style.background = '#fff';
-    el.style.boxShadow = 'none';
-  });
-}
-
-// Apply iOS-like header/body/footer styling using inline styles
-function applyIOSQuickAddTheme(){
-  const scr = document.getElementById('addPlayerScreen');
-  if (!scr) return;
-
-  // Header
-  const header = scr.querySelector('.screen-header');
-  if (header) {
-    header.style.position = 'sticky';
-    header.style.top = '0';
-    header.style.display = 'flex';
-    header.style.alignItems = 'center';
-    header.style.justifyContent = 'center';
-    header.style.padding = '12px 16px';
-    header.style.background = '#fff';
-    header.style.color = '#111';
-    header.style.borderBottom = '1px solid #e5e5ea';
-  }
-  const title = header?.querySelector('h1');
-  if (title) {
-    title.style.margin = '0';
-    title.style.fontSize = '18px';
-    title.style.fontWeight = '600';
-    title.style.letterSpacing = '.2px';
-  }
-  const close = header?.querySelector('.icon-btn, #qaClose');
-  if (close) {
-    close.style.position = 'absolute';
-    close.style.right = '12px';
-    close.style.top = '8px';
-    close.style.width = '32px';
-    close.style.height = '32px';
-    close.style.lineHeight = '28px';
-    close.style.textAlign = 'center';
-    close.style.borderRadius = '50%';
-    close.style.border = '1px solid #e5e5ea';
-    close.style.background = '#fff';
-    close.style.color = '#111';
-    close.style.fontSize = '20px';
-    close.style.padding = '0';
-  }
-
-  // Body
-  const body = scr.querySelector('.screen-body');
-  if (body) {
-    body.style.padding = '12px 16px 16px';
-    body.style.display = 'grid';
-    body.style.gap = '12px';
-    body.style.maxWidth = '640px';
-    body.style.margin = '0 auto';
-  }
-  body?.querySelectorAll('label').forEach(l=>{
-    l.style.display = 'grid';
-    l.style.gap = '6px';
-    l.style.margin = '0';
-  });
-  body?.querySelectorAll('label > span').forEach(s=>{
-    s.style.fontSize = '14px';
-    s.style.fontWeight = '600';
-    s.style.color = '#222';
-  });
-
-  // Footer
-  const footer = scr.querySelector('.screen-footer');
-  if (footer) {
-    footer.style.position = 'sticky';
-    footer.style.bottom = '0';
-    footer.style.display = 'flex';
-    footer.style.gap = '10px';
-    footer.style.alignItems = 'center';
-    footer.style.padding = '10px 16px';
-    footer.style.borderTop = '1px solid #e5e5ea';
-    footer.style.background = '#fafafa';
-    footer.style.paddingBottom = 'calc(10px + env(safe-area-inset-bottom))';
-  }
-  footer?.querySelectorAll('button').forEach(b=>{
-    b.style.fontSize = '16px';
-    b.style.padding = '10px 14px';
-    b.style.borderRadius = '12px';
-    b.style.border = '1px solid #cfd4dc';
-  });
-  footer?.querySelectorAll('.primary').forEach(b=>{
-    b.style.background = '#0b5ed7';
-    b.style.color = '#fff';
-    b.style.borderColor = '#0b5ed7';
-  });
-  footer?.querySelectorAll('.secondary').forEach(b=>{
-    b.style.background = '#fff';
-    b.style.color = '#111';
-  });
-
-  // Inputs
-  forceCompactQuickAddElements();
-}
-
-
+// ------------------ Add Player (full-screen) ------------------
 function openQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
-  $('#qaFirst').value = '';
-  $('#qaLast').value  = '';
-  $('#qaGrade').value = '';
+  $('#qaFirst').value=''; $('#qaLast').value=''; $('#qaGrade').value='';
   $('#addPlayerScreen').classList.remove('hidden');
-
-  // Apply iOS look + compact fields now and on next frame
-  applyIOSQuickAddTheme();
-  requestAnimationFrame(()=> {
-    applyIOSQuickAddTheme();
-  });
-
+  applyIOSQuickAddTheme(); requestAnimationFrame(applyIOSQuickAddTheme);
   $('#qaFirst').focus();
 }
-
-
-function closeQuickAdd(){
-  if (!document.getElementById('addPlayerScreen')) return;
-  $('#addPlayerScreen').classList.add('hidden');
-}
+function closeQuickAdd(){ if (!document.getElementById('addPlayerScreen')) return; $('#addPlayerScreen').classList.add('hidden'); }
 function saveQuickAdd(closeAfter){
-  const first = $('#qaFirst').value.trim();
-  const last  = $('#qaLast').value.trim();
-  const grade = $('#qaGrade').value.trim();
-  if (!first && !last) { alert('Please enter a first or last name.'); return; }
-  state.players.push({
-    id: crypto.randomUUID(),
-    jersey: 0,
-    first, last, grade,
-    primary: '', secondary: '',
-    ratings: {}
-  });
-  saveLocal();
-  renderPlayers();
-
-  if (closeAfter) {
-    closeQuickAdd();
-  } else {
-    $('#qaFirst').value = '';
-    $('#qaLast').value  = '';
-    $('#qaGrade').value = '';
-    $('#qaFirst').focus();
-  }
+  const first = $('#qaFirst').value.trim(), last = $('#qaLast').value.trim(), grade = $('#qaGrade').value.trim();
+  if (!first && !last){ alert('Please enter a first or last name.'); return; }
+  state.players.push({ id:crypto.randomUUID(), jersey:0, first, last, grade, primary:'', secondary:'', ratings:{} });
+  saveLocal(); renderPlayers();
+  if (closeAfter){ closeQuickAdd(); } else { $('#qaFirst').value=''; $('#qaLast').value=''; $('#qaGrade').value=''; $('#qaFirst').focus(); }
 }
 
-// ---------- Export / Import ----------
+// ------------------ Export / Import ------------------
 function exportData(){
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'jfc_data.json';
-  a.click();
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'jfc_data.json'; a.click();
 }
 async function importData(e){
   const file = e.target.files[0]; if(!file) return;
   const text = await file.text();
-  try{ state = JSON.parse(text); saveLocal(); render(); }
-  catch(err){ alert('Import failed: '+err.message); }
-  e.target.value = '';
+  try{ state = JSON.parse(text); saveLocal(); render(); } catch(err){ alert('Import failed: '+err.message); }
+  e.target.value='';
 }
 
-if('serviceWorker' in navigator){
-  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js'));
-}
+// ------------------ PWA ------------------
+if ('serviceWorker' in navigator) window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js'));
