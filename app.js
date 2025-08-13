@@ -261,47 +261,29 @@ function applyIOSQuickAddTheme(){
   forceCompactQuickAddElements();
 }
 
+// ------------------ Ratings styles (compact rows, label | slider | value) ------------------
 function injectRatingsStyles(){
   if (document.getElementById('jfc-ratings-style')) return;
   const s = document.createElement('style');
   s.id = 'jfc-ratings-style';
   s.textContent = `
-    /* Full screen shell (reuse your .screen layout) */
     #ratingsScreen.screen.hidden{display:none}
-    #ratingsScreen.screen{
-      position:fixed; inset:0; background:#fff; z-index:1001;
-      display:grid; grid-template-rows:auto 1fr auto;
-    }
-    #ratingsScreen .screen-header{
-      position:sticky; top:0; display:flex; align-items:center; justify-content:center;
-      padding:10px 14px; background:#fff; border-bottom:1px solid #e5e5ea;
-    }
-    #ratingsScreen .screen-header h1{margin:0; font-size:20px; font-weight:700; letter-spacing:.2px}
+    #ratingsScreen.screen{position:fixed; inset:0; background:#fff; z-index:1001; display:grid; grid-template-rows:auto 1fr auto}
+    #ratingsScreen .screen-header{position:sticky; top:0; display:flex; align-items:center; justify-content:center; padding:10px 14px; background:#fff; border-bottom:1px solid #e5e5ea}
+    #ratingsScreen .screen-header h1{margin:0; font-size:20px; font-weight:700}
     #ratingsScreen .screen-header .sub{font-size:13px; color:#555; margin-top:2px; text-align:center}
-    #ratingsScreen .closeX{
-      position:absolute; right:12px; top:8px; width:32px; height:32px; line-height:28px; text-align:center;
-      border-radius:50%; border:1px solid #e5e5ea; background:#fff; font-size:20px; cursor:pointer;
-    }
+    #ratingsScreen .closeX{position:absolute; right:12px; top:8px; width:32px; height:32px; line-height:28px; text-align:center; border-radius:50%; border:1px solid #e5e5ea; background:#fff; font-size:20px; cursor:pointer}
+    #ratingsScreen .screen-body{padding:14px; max-width:760px; margin:0 auto; display:grid; gap:0; align-content:start}
 
-    #ratingsScreen .screen-body{
-      padding:14px 14px 10px; max-width:760px; margin:0 auto;
-      display:grid; gap:10px; align-content:start;
-    }
-
-    /* New compact row layout */
-    .skillRow{display:grid; grid-template-columns:140px 1fr; align-items:center; gap:10px; min-height:44px}
+    /* Each skill on one tight row with divider */
+    .skillRow{display:grid; grid-template-columns:140px 1fr 36px; align-items:center; column-gap:12px; padding:8px 0; border-bottom:1px solid #eee}
     .skillLabel{font-size:15px; font-weight:600; color:#222}
+    .skillValue{width:36px; text-align:right; font-variant-numeric:tabular-nums; color:#333}
 
-    .sliderWrap{position:relative}
-    .dotRow{position:absolute; left:0; right:0; top:-18px; display:flex; justify-content:space-between; align-items:center; padding:0 6px}
-    .dot{width:12px; height:12px; border-radius:50%; background:#cfd4dc}
-    .dot.active{background:#111}
-
-    .slider{width:100%; -webkit-appearance:none; appearance:none; height:4px; background:#e5e5ea; border-radius:4px; outline:none}
-    .slider::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%;
-      background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7; margin-top:-10px;
-    }
+    /* Slider look: blue progress, gray remainder */
+    .slider{width:100%; height:6px; border-radius:3px; outline:none; -webkit-appearance:none; appearance:none; background:#e5e5ea}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none; appearance:none; width:20px; height:20px; border-radius:50%; background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7; cursor:pointer; margin-top:-7px}
+    .slider::-moz-range-thumb{width:20px; height:20px; border-radius:50%; background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7; cursor:pointer}
 
     #ratingsScreen .screen-footer{display:flex; gap:10px; align-items:center; padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa; padding-bottom:calc(10px + env(safe-area-inset-bottom))}
     #ratingsScreen .screen-footer .spacer{flex:1}
@@ -312,16 +294,13 @@ function injectRatingsStyles(){
   document.head.appendChild(s);
 }
 
-
 // ------------------ UI ------------------
 document.addEventListener('DOMContentLoaded', () => {
-  // Apply compact look + ratings styles early
   injectCompactAddStyles();
-  injectRatingsStyles();              // <-- added
+  injectRatingsStyles();
   applyIOSQuickAddTheme();
   forceCompactQuickAddElements();
 
-  // Tabs
   $$('nav#tabs button').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       $$('nav#tabs button').forEach(b=>b.classList.remove('active'));
@@ -333,10 +312,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Buttons: Add Player -> full-screen
   $('#btnAddPlayer')?.addEventListener('click', ()=>openQuickAdd());
 
-  // Export / Import / Reset
   $('#btnExport')?.addEventListener('click', exportData);
   $('#btnExport2')?.addEventListener('click', exportData);
   $('#btnImport')?.addEventListener('click', ()=>$('#fileImport')?.click());
@@ -347,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state = loadLocal(); render(); }
   });
 
-  // Cloud
   $('#btnCloudLoad')?.addEventListener('click', async ()=>{
     try{ await cloudLoad(); alert('Loaded from Sheets'); render(); }catch(e){ alert(e.message); }
   });
@@ -355,7 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
     try{ await cloudSave(); alert('Saved to Sheets'); }catch(e){ alert(e.message); }
   });
 
-  // Attendance defaults & controls
   const attDate = $('#attDate'); if(attDate) attDate.value = todayISO();
   $('#btnMarkAllAbsent')?.addEventListener('click', ()=>{
     const d = $('#attDate')?.value || todayISO();
@@ -365,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#attSort')?.addEventListener('change', renderAttendance);
   $('#attDate')?.addEventListener('change', renderAttendance);
 
-  // Settings
   const urlInput = $('#appsScriptUrl');
   if (urlInput){
     urlInput.value = getAppsScriptUrl();
@@ -376,12 +350,11 @@ document.addEventListener('DOMContentLoaded', () => {
     saveLocal(); render();
   });
 
-  // Quick Add screen buttons (if screen exists)
   if (document.getElementById('addPlayerScreen')){
     $('#qaClose')?.addEventListener('click', ()=>closeQuickAdd());
     $('#qaCancel')?.addEventListener('click', ()=>closeQuickAdd());
-    $('#qaSaveAdd')?.addEventListener('click', ()=>saveQuickAdd(false)); // stay open
-    $('#qaSaveClose')?.addEventListener('click', ()=>saveQuickAdd(true)); // close
+    $('#qaSaveAdd')?.addEventListener('click', ()=>saveQuickAdd(false));
+    $('#qaSaveClose')?.addEventListener('click', ()=>saveQuickAdd(true));
   }
 
   render();
@@ -407,8 +380,7 @@ function renderPlayers(){
       <button data-act="edit">Edit</button>
     `;
     row.querySelector('[data-act="edit"]').addEventListener('click',()=>openPlayerDialog(p));
-    // OPEN rating screen (full-page sliders)
-    row.querySelector('[data-act="rate"]').addEventListener('click',()=>openRateScreen(p)); // <-- changed
+    row.querySelector('[data-act="rate"]').addEventListener('click',()=>openRateScreen(p));
     list.appendChild(row);
   });
   $('#playersList').innerHTML=''; $('#playersList').appendChild(list);
@@ -601,6 +573,13 @@ function ensureRatingsScreen(){
 
 let _ratingPlayer = null;
 
+// helper: blue progress background on the slider
+function styleSlider(sl){
+  const min = +sl.min || 0, max = +sl.max || 5, val = +sl.value || 0;
+  const pct = ((val - min) * 100) / (max - min);
+  sl.style.background = `linear-gradient(to right, #0b5ed7 ${pct}%, #e5e5ea ${pct}%)`;
+}
+
 function openRateScreen(player){
   injectRatingsStyles();
   const scr = ensureRatingsScreen();
@@ -613,38 +592,25 @@ function openRateScreen(player){
   body.innerHTML = '';
   SKILLS.forEach(sk=>{
     const val = Math.max(0, Math.min(5, +(player.ratings?.[sk.key] ?? 0)));
-    const block = document.createElement('div');
-    block.className = 'skillRow';
-    block.innerHTML = `
+    const row = document.createElement('div');
+    row.className = 'skillRow';
+    row.innerHTML = `
       <div class="skillLabel">${sk.label}</div>
-      <div class="sliderWrap">
-        <div class="dotRow">
-          <div class="dot" data-v="1"></div>
-          <div class="dot" data-v="2"></div>
-          <div class="dot" data-v="3"></div>
-          <div class="dot" data-v="4"></div>
-          <div class="dot" data-v="5"></div>
-        </div>
-        <input type="range" min="0" max="5" step="1" class="slider" value="${val}" data-key="${sk.key}">
-      </div>
+      <input type="range" min="0" max="5" step="1" class="slider" value="${val}" data-key="${sk.key}">
+      <div class="skillValue">${val}</div>
     `;
-    body.appendChild(block);
+    body.appendChild(row);
 
-    const slider = block.querySelector('.slider');
-    const dots   = [...block.querySelectorAll('.dot')];
-    syncDots(dots, +slider.value);
-    dots.forEach(d=> d.addEventListener('click', ()=>{
-      slider.value = d.dataset.v;
-      syncDots(dots, +slider.value);
-    }));
-    slider.addEventListener('input', ()=> syncDots(dots, +slider.value));
+    const slider = row.querySelector('.slider');
+    const valueEl = row.querySelector('.skillValue');
+    styleSlider(slider);
+    slider.addEventListener('input', ()=>{
+      valueEl.textContent = slider.value;
+      styleSlider(slider);
+    });
   });
 
   scr.classList.remove('hidden');
-}
-
-function syncDots(dots, value){
-  dots.forEach(d => d.classList.toggle('active', +d.dataset.v <= value && value > 0));
 }
 
 function closeRateScreen(){
