@@ -27,3 +27,12 @@ dialog{border:1px solid #ddd;border-radius:12px;padding:12px}
 #attendanceList .attBtns{display:flex;gap:6px}
 #eligibilityTable table, #depthChart table{width:100%;border-collapse:collapse}
 #eligibilityTable th, #eligibilityTable td, #depthChart th, #depthChart td{border-bottom:1px solid #eee;padding:8px;text-align:left}
+/* Attendance selected state */
+#attendanceList .attBtns button.active {
+  background: #0b5ed7;
+  color: #fff;
+  border-color: #0b5ed7;
+}
+#attendanceList .attBtns button:active {
+  transform: scale(0.98);
+}
