@@ -275,7 +275,14 @@ function renderPlayers(){
 
 function openPlayerDialog(player=null, ratingsOnly=false){
   const d = $('#playerDialog');
-  $('#playerDialogTitle').textContent = player? (ratingsOnly?'Update Ratings':'Edit Player') : 'Add Player';
+  const simpleAdd = !player && !ratingsOnly; // Quick add mode
+
+  // Title
+  $('#playerDialogTitle').textContent = simpleAdd
+    ? 'Quick Add Player'
+    : (player ? (ratingsOnly ? 'Update Ratings' : 'Edit Player') : 'Add Player');
+
+  // Prefill fields
   $('#pJersey').value = player?.jersey ?? '';
   $('#pFirst').value = player?.first ?? '';
   $('#pLast').value = player?.last ?? '';
@@ -287,34 +294,94 @@ function openPlayerDialog(player=null, ratingsOnly=false){
   set('rSpeed', r.speed); set('rStrength', r.strength); set('rAgility', r.agility); set('rTackling', r.tackling);
   set('rAwareness', r.awareness); set('rHands', r.hands); set('rThrowing', r.throwing); set('rKicking', r.kicking);
 
-  $$('#playerDialog .grid')[0].style.display = ratingsOnly? 'none':'grid';
+  // Show/hide fields:
+  // grid[0] = basic info (Jersey, First, Last, Grade, Primary, Secondary)
+  // grid[1] = ratings
+  const grids = $$('#playerDialog .grid');
+  const basicGrid = grids[0];
+  const ratingsGrid = grids[1];
+
+  // Reset all to visible first
+  basicGrid.style.display = 'grid';
+  ratingsGrid.style.display = 'grid';
+  const labels = Array.from(basicGrid.querySelectorAll('label'));
+  labels.forEach(l => l.style.display = '');
+
+  if (ratingsOnly) {
+    // Ratings-only edit
+    basicGrid.style.display = 'none';
+  } else if (simpleAdd) {
+    // Quick add: only First, Last, Grade
+    const [labJersey, labFirst, labLast, labGrade, labPrimary, labSecondary] = labels;
+    labJersey.style.display = 'none';
+    labPrimary.style.display = 'none';
+    labSecondary.style.display = 'none';
+    ratingsGrid.style.display = 'none';
+  }
 
   d.showModal();
+
   $('#btnSavePlayer').onclick = ()=>{
-    if(!player && ratingsOnly) { d.close(); return; }
-    const data = {
-      jersey: parseInt($('#pJersey').value||'0'),
-      first: $('#pFirst').value.trim(),
-      last: $('#pLast').value.trim(),
-      grade: $('#pGrade').value.trim(),
-      primary: $('#pPrimary').value || '',
-      secondary: $('#pSecondary').value || '',
-      ratings: {
-        speed: +($('#rSpeed').value||0),
-        strength: +($('#rStrength').value||0),
-        agility: +($('#rAgility').value||0),
-        tackling: +($('#rTackling').value||0),
-        awareness: +($('#rAwareness').value||0),
-        hands: +($('#rHands').value||0),
-        throwing: +($('#rThrowing').value||0),
-        kicking: +($('#rKicking').value||0),
-      }
-    };
-    if(player) { Object.assign(player, data); }
-    else { state.players.push({id: crypto.randomUUID(), ...data}); }
-    saveLocal(); d.close(); render();
+    if (ratingsOnly && !player) { d.close(); return; }
+
+    if (simpleAdd) {
+      // Only take first, last, grade; everything else defaulted
+      const data = {
+        jersey: 0,
+        first: $('#pFirst').value.trim(),
+        last:  $('#pLast').value.trim(),
+        grade: $('#pGrade').value.trim(),
+        primary: '',
+        secondary: '',
+        ratings: {}
+      };
+      if (!data.first && !data.last) { alert('Please enter a first or last name.'); return; }
+      state.players.push({ id: crypto.randomUUID(), ...data });
+    } else if (ratingsOnly) {
+      // Update ratings only
+      const upd = {
+        ratings: {
+          speed: +($('#rSpeed').value||0),
+          strength: +($('#rStrength').value||0),
+          agility: +($('#rAgility').value||0),
+          tackling: +($('#rTackling').value||0),
+          awareness: +($('#rAwareness').value||0),
+          hands: +($('#rHands').value||0),
+          throwing: +($('#rThrowing').value||0),
+          kicking: +($('#rKicking').value||0),
+        }
+      };
+      Object.assign(player, upd);
+    } else {
+      // Full edit mode (existing behavior)
+      const data = {
+        jersey: parseInt($('#pJersey').value||'0'),
+        first: $('#pFirst').value.trim(),
+        last:  $('#pLast').value.trim(),
+        grade: $('#pGrade').value.trim(),
+        primary: $('#pPrimary').value || '',
+        secondary: $('#pSecondary').value || '',
+        ratings: {
+          speed: +($('#rSpeed').value||0),
+          strength: +($('#rStrength').value||0),
+          agility: +($('#rAgility').value||0),
+          tackling: +($('#rTackling').value||0),
+          awareness: +($('#rAwareness').value||0),
+          hands: +($('#rHands').value||0),
+          throwing: +($('#rThrowing').value||0),
+          kicking: +($('#rKicking').value||0),
+        }
+      };
+      if (player) Object.assign(player, data);
+      else state.players.push({ id: crypto.randomUUID(), ...data });
+    }
+
+    saveLocal();
+    d.close();
+    render();
   };
 }
+
 
 // UPDATED: adds ✓ on selected button so taps are obvious
 function renderAttendance(){
