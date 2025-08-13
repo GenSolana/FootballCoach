@@ -217,54 +217,88 @@ function injectCompactAddStyles(){
   const style = document.createElement('style');
   style.id = 'jfc-compact-add';
   style.textContent = `
+    /* ===== Full-screen shell ===== */
     .screen.hidden { display:none }
-    .screen{position:fixed; inset:0; background:#fff; z-index:1000; display:grid; grid-template-rows:auto 1fr auto}
-    .screen-header{display:flex; align-items:center; padding:16px; background:#0b5ed7; color:#fff}
-    .screen-header h1{font-size:20px; margin:0}
-    .screen-header .icon-btn{margin-left:auto; background:transparent; border:none; color:#fff; font-size:28px; line-height:1; padding:4px 8px; border-radius:8px}
-    .screen-body{padding:12px 16px; display:grid; gap:8px}
-    .screen-body label{display:grid; gap:4px; margin:0}
-    .screen-footer{display:flex; gap:10px; align-items:center; padding:10px 16px; border-top:1px solid #e7ebf0; background:#f9fafb}
-    .screen-footer .spacer{flex:1}
-    .screen-footer button{font-size:16px; padding:8px 12px; border-radius:10px}
-    .screen-footer .primary{background:#0b5ed7; color:#fff; border:1px solid #0b5ed7}
-    .screen-footer .secondary{background:#fff; color:#333; border:1px solid #cfd4dc}
+    .screen{
+      position:fixed; inset:0; background:#fff; z-index:1000;
+      display:grid; grid-template-rows:auto 1fr auto;
+    }
 
-    /* Hammer all min-heights that might be set globally */
-    #addPlayerScreen *{min-height:unset !important}
+    /* ===== iOS-like header ===== */
+    .screen-header{
+      position:sticky; top:0;
+      display:flex; align-items:center; justify-content:center;
+      padding:12px 16px;
+      background:#fff; color:#111;
+      border-bottom:1px solid #e5e5ea;
+    }
+    .screen-header h1{
+      margin:0; font-size:18px; font-weight:600; letter-spacing:.2px;
+    }
+    .screen-header .icon-btn{
+      position:absolute; right:12px; top:8px;
+      width:32px; height:32px; line-height:28px; text-align:center;
+      border-radius:50%;
+      border:1px solid #e5e5ea; background:#fff; color:#111;
+      font-size:20px; padding:0;
+    }
 
-    /* Default compact height – inline styles will reinforce this too */
+    /* ===== Body spacing (centered column) ===== */
+    .screen-body{
+      padding:12px 16px 16px;
+      display:grid; gap:12px;
+      max-width:640px; margin:0 auto;
+    }
+    .screen-body label{ display:grid; gap:6px; margin:0 }
+    .screen-body label span{ font-size:14px; font-weight:600; color:#222 }
+
+    /* ===== iOS-like compact fields (single-row) ===== */
     #addPlayerScreen input,
     #addPlayerScreen select,
     #addPlayerScreen textarea{
-      height:34px !important;
-      min-height:34px !important;
-      padding:4px 8px !important;
-      font-size:16px !important;
+      height:40px !important;        /* compact, single-row */
+      min-height:40px !important;
+      padding:8px 12px !important;
+      font-size:16px !important;     /* prevents iOS zoom */
       line-height:1.2 !important;
       box-sizing:border-box !important;
       resize:none !important;
       -webkit-appearance:none !important;
       appearance:none !important;
-      border:1px solid #cfd4dc !important;
-      border-radius:8px !important;
+      border:1px solid #d9d9e0 !important;
+      border-radius:10px !important;
       background:#fff !important;
+      box-shadow:none !important;
     }
+    #addPlayerScreen *{ min-height:unset !important } /* kill framework min-heights */
+
+    /* ===== Footer buttons ===== */
+    .screen-footer{
+      position:sticky; bottom:0;
+      display:flex; gap:10px; align-items:center;
+      padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* iOS safe area */
+    }
+    .screen-footer .spacer{ flex:1 }
+    .screen-footer button{
+      font-size:16px; padding:10px 14px; border-radius:12px; border:1px solid #cfd4dc;
+    }
+    .screen-footer .primary{ background:#0b5ed7; color:#fff; border-color:#0b5ed7 }
+    .screen-footer .secondary{ background:#fff; color:#111 }
   `;
   document.head.appendChild(style);
 }
 
 
+
 // ---------- UI ----------
 document.addEventListener('DOMContentLoaded',()=>{
  document.addEventListener('DOMContentLoaded', ()=>{
-  // 1) Inject the compact CSS for the Add Player screen
-  injectCompactAddStyles();
+  injectCompactAddStyles();              // add the iOS look
+if (typeof forceCompactQuickAddElements === 'function') {
+  forceCompactQuickAddElements();      // inline fallback (beats stubborn CSS)
+}
 
-  // 2) Force inline compact styles once at startup (wins vs global CSS)
-  if (typeof forceCompactQuickAddElements === 'function') {
-    forceCompactQuickAddElements();
-  }
 
   // 3) Your existing tab wiring…
   $$('nav#tabs button').forEach(btn => btn.addEventListener('click', ()=>{
@@ -523,17 +557,14 @@ function forceCompactQuickAddElements() {
   });
 }
 
+
 function openQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
-  $('#qaFirst').value = '';
-  $('#qaLast').value  = '';
-  $('#qaGrade').value = '';
+  $('#qaFirst').value=''; $('#qaLast').value=''; $('#qaGrade').value='';
   $('#addPlayerScreen').classList.remove('hidden');
 
-  // Force compact sizing now (after visible)…
+  // force sizing now and on next tick
   forceCompactQuickAddElements();
-
-  // …and again on next tick in case layout/CSS loads async
   requestAnimationFrame(forceCompactQuickAddElements);
 
   $('#qaFirst').focus();
