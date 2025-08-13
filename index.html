@@ -123,5 +123,37 @@
   </dialog>
 
   <script src="app.js"></script>
+  <!-- Quick Add Player: full-screen screen -->
+<div id="addPlayerScreen" class="screen hidden" role="dialog" aria-modal="true" aria-labelledby="qaTitle">
+  <header class="screen-header">
+    <h1 id="qaTitle">Add Player</h1>
+    <button id="qaClose" class="icon-btn" aria-label="Close">&times;</button>
+  </header>
+
+  <div class="screen-body">
+    <label>
+      <span>First Name</span>
+      <input id="qaFirst" type="text" inputmode="text" autocomplete="given-name" />
+    </label>
+
+    <label>
+      <span>Last Name</span>
+      <input id="qaLast" type="text" inputmode="text" autocomplete="family-name" />
+    </label>
+
+    <label>
+      <span>Grade</span>
+      <input id="qaGrade" type="text" inputmode="numeric" />
+    </label>
+  </div>
+
+  <div class="screen-footer">
+    <button id="qaCancel" class="secondary">Cancel</button>
+    <div class="spacer"></div>
+    <button id="qaSaveAdd" class="primary">Save & Add Another</button>
+    <button id="qaSaveClose" class="primary">Save & Close</button>
+  </div>
+</div>
+
 </body>
 </html>
