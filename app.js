@@ -306,7 +306,11 @@ async function cloudSave(){
   })));
 
   const payload = { players: playersRows, attendance: attendanceOut, ratings: ratingsOut };
-  const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+  const res = await fetch(url, {
+  method: 'POST',
+  headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+  body: JSON.stringify(payload)
+});
   if(!res.ok) throw new Error('Cloud save failed');
   return await res.json();
 }
