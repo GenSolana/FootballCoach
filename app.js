@@ -273,50 +273,39 @@ function injectRatingsStyles(){
       display:grid; grid-template-rows:auto 1fr auto;
     }
     #ratingsScreen .screen-header{
-      position:sticky; top:0;
-      display:flex; align-items:center; justify-content:center;
-      padding:12px 16px; background:#fff; border-bottom:1px solid #e5e5ea;
+      position:sticky; top:0; display:flex; align-items:center; justify-content:center;
+      padding:10px 14px; background:#fff; border-bottom:1px solid #e5e5ea;
     }
-    #ratingsScreen .screen-header h1{margin:0; font-size:22px; font-weight:800; letter-spacing:.3px}
-    #ratingsScreen .screen-header .sub{font-size:14px; color:#555; margin-top:2px; text-align:center}
+    #ratingsScreen .screen-header h1{margin:0; font-size:20px; font-weight:700; letter-spacing:.2px}
+    #ratingsScreen .screen-header .sub{font-size:13px; color:#555; margin-top:2px; text-align:center}
     #ratingsScreen .closeX{
       position:absolute; right:12px; top:8px; width:32px; height:32px; line-height:28px; text-align:center;
       border-radius:50%; border:1px solid #e5e5ea; background:#fff; font-size:20px; cursor:pointer;
     }
 
     #ratingsScreen .screen-body{
-      padding:18px 18px 10px; max-width:760px; margin:0 auto;
-      display:grid; gap:22px; align-content:start;
+      padding:14px 14px 10px; max-width:760px; margin:0 auto;
+      display:grid; gap:10px; align-content:start;
     }
 
-    .skillBlock{display:grid; gap:10px}
-    .skillTitle{font-size:28px; font-weight:700; text-align:center}
+    /* New compact row layout */
+    .skillRow{display:grid; grid-template-columns:140px 1fr; align-items:center; gap:10px; min-height:44px}
+    .skillLabel{font-size:15px; font-weight:600; color:#222}
 
-    /* 5-dot row */
-    .dotRow{display:flex; justify-content:space-between; align-items:center; padding:0 12px}
-    .dot{width:18px; height:18px; border-radius:50%; background:#cfd4dc}
+    .sliderWrap{position:relative}
+    .dotRow{position:absolute; left:0; right:0; top:-18px; display:flex; justify-content:space-between; align-items:center; padding:0 6px}
+    .dot{width:12px; height:12px; border-radius:50%; background:#cfd4dc}
     .dot.active{background:#111}
 
-    /* Slider under the dots */
-    .sliderWrap{padding:0 10px}
-    .slider{
-      width:100%; -webkit-appearance:none; appearance:none; height:4px; background:#e5e5ea; border-radius:4px; outline:none;
-    }
+    .slider{width:100%; -webkit-appearance:none; appearance:none; height:4px; background:#e5e5ea; border-radius:4px; outline:none}
     .slider::-webkit-slider-thumb{
-      -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%;
-      background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7;
-      margin-top:-12px;
+      -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%;
+      background:#0b5ed7; border:3px solid #fff; box-shadow:0 0 0 1px #0b5ed7; margin-top:-10px;
     }
 
-    #ratingsScreen .screen-footer{
-      display:flex; gap:10px; align-items:center;
-      padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa;
-      padding-bottom:calc(10px + env(safe-area-inset-bottom));
-    }
+    #ratingsScreen .screen-footer{display:flex; gap:10px; align-items:center; padding:10px 16px; border-top:1px solid #e5e5ea; background:#fafafa; padding-bottom:calc(10px + env(safe-area-inset-bottom))}
     #ratingsScreen .screen-footer .spacer{flex:1}
-    #ratingsScreen .screen-footer button{
-      font-size:16px; padding:10px 14px; border-radius:12px; border:1px solid #cfd4dc;
-    }
+    #ratingsScreen .screen-footer button{font-size:16px; padding:10px 14px; border-radius:12px; border:1px solid #cfd4dc}
     #ratingsScreen .primary{background:#0b5ed7;color:#fff;border-color:#0b5ed7}
     #ratingsScreen .secondary{background:#fff;color:#111}
   `;
@@ -625,17 +614,17 @@ function openRateScreen(player){
   SKILLS.forEach(sk=>{
     const val = Math.max(0, Math.min(5, +(player.ratings?.[sk.key] ?? 0)));
     const block = document.createElement('div');
-    block.className = 'skillBlock';
+    block.className = 'skillRow';
     block.innerHTML = `
-      <div class="skillTitle">${sk.label}</div>
-      <div class="dotRow">
-        <div class="dot" data-v="1"></div>
-        <div class="dot" data-v="2"></div>
-        <div class="dot" data-v="3"></div>
-        <div class="dot" data-v="4"></div>
-        <div class="dot" data-v="5"></div>
-      </div>
+      <div class="skillLabel">${sk.label}</div>
       <div class="sliderWrap">
+        <div class="dotRow">
+          <div class="dot" data-v="1"></div>
+          <div class="dot" data-v="2"></div>
+          <div class="dot" data-v="3"></div>
+          <div class="dot" data-v="4"></div>
+          <div class="dot" data-v="5"></div>
+        </div>
         <input type="range" min="0" max="5" step="1" class="slider" value="${val}" data-key="${sk.key}">
       </div>
     `;
