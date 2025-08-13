@@ -211,8 +211,51 @@ function generateDepth(refDate, eligibleOnly=true){
   return result;
 }
 
+// ---------- inject compact styles for Add Player (single-row inputs) ----------
+function injectCompactAddStyles(){
+  if (document.getElementById('jfc-compact-add')) return;
+  const style = document.createElement('style');
+  style.id = 'jfc-compact-add';
+  style.textContent = `
+    /* Full-screen shell (kept as-is) */
+    .screen.hidden { display:none }
+    .screen{position:fixed; inset:0; background:#fff; z-index:1000; display:grid; grid-template-rows:auto 1fr auto}
+    .screen-header{display:flex; align-items:center; padding:16px; background:#0b5ed7; color:#fff}
+    .screen-header h1{font-size:20px; margin:0}
+    .screen-header .icon-btn{margin-left:auto; background:transparent; border:none; color:#fff; font-size:28px; line-height:1; padding:4px 8px; border-radius:8px}
+    .screen-body{padding:12px 16px; display:grid; gap:8px}
+    .screen-footer{display:flex; gap:10px; align-items:center; padding:10px 16px; border-top:1px solid #e7ebf0; background:#f9fafb}
+    .screen-footer .spacer{flex:1}
+    .screen-footer button{font-size:16px; padding:8px 12px; border-radius:10px}
+    .screen-footer .primary{background:#0b5ed7; color:#fff; border:1px solid #0b5ed7}
+    .screen-footer .secondary{background:#fff; color:#333; border:1px solid #cfd4dc}
+
+    /* >>> compact input height (force single row) <<< */
+    #addPlayerScreen input,
+    #addPlayerScreen select,
+    #addPlayerScreen textarea{
+      height:34px !important;
+      min-height:34px !important;
+      padding:4px 8px !important;
+      font-size:16px !important;    /* prevents iOS zoom */
+      line-height:1.2 !important;
+      box-sizing:border-box !important;
+      resize:none !important;
+      -webkit-appearance:none !important;
+      appearance:none !important;
+      border:1px solid #cfd4dc !important;
+      border-radius:8px !important;
+      background:#fff !important;
+    }
+    #addPlayerScreen label{display:grid; gap:4px; margin:0}
+  `;
+  document.head.appendChild(style);
+}
+
 // ---------- UI ----------
 document.addEventListener('DOMContentLoaded',()=>{
+  injectCompactAddStyles(); // ensure compact fields
+
   $$('nav#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
     $$('nav#tabs button').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
@@ -223,34 +266,40 @@ document.addEventListener('DOMContentLoaded',()=>{
   }));
 
   // OPEN full-screen quick add instead of modal
-  $('#btnAddPlayer').addEventListener('click',()=>openQuickAdd());
+  const addBtn = $('#btnAddPlayer');
+  if (addBtn) addBtn.addEventListener('click',()=>openQuickAdd());
 
-  $('#btnExport').addEventListener('click',()=>exportData());
-  $('#btnExport2').addEventListener('click',()=>exportData());
-  $('#btnImport').addEventListener('click',()=>$('#fileImport').click());
-  $('#btnImport2').addEventListener('click',()=>$('#fileImport2').click());
-  $('#fileImport').addEventListener('change',importData);
-  $('#fileImport2').addEventListener('change',importData);
-  $('#btnReset').addEventListener('click',()=>{ if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state=loadLocal(); render(); } });
+  $('#btnExport')?.addEventListener('click',()=>exportData());
+  $('#btnExport2')?.addEventListener('click',()=>exportData());
+  $('#btnImport')?.addEventListener('click',()=>$('#fileImport').click());
+  $('#btnImport2')?.addEventListener('click',()=>$('#fileImport2').click());
+  $('#fileImport')?.addEventListener('change',importData);
+  $('#fileImport2')?.addEventListener('change',importData);
+  $('#btnReset')?.addEventListener('click',()=>{ if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state=loadLocal(); render(); } });
 
-  $('#btnCloudLoad').addEventListener('click', async ()=>{ try{ await cloudLoad(); alert('Loaded from Sheets'); render(); } catch(e){ alert(e.message); } });
-  $('#btnCloudSave').addEventListener('click', async ()=>{ try{ await cloudSave(); alert('Saved to Sheets'); } catch(e){ alert(e.message); } });
+  $('#btnCloudLoad')?.addEventListener('click', async ()=>{ try{ await cloudLoad(); alert('Loaded from Sheets'); render(); } catch(e){ alert(e.message); } });
+  $('#btnCloudSave')?.addEventListener('click', async ()=>{ try{ await cloudSave(); alert('Saved to Sheets'); } catch(e){ alert(e.message); } });
 
-  $('#attDate').value = todayISO();
-  $('#btnMarkAllAbsent').addEventListener('click',()=>{ const d=$('#attDate').value; state.players.forEach(p=> setAttendance(d,p.id,'Absent')); renderAttendance(); });
-  $('#attSort').addEventListener('change', renderAttendance);
-  $('#attDate').addEventListener('change', renderAttendance);
+  const attDate = $('#attDate');
+  if (attDate) attDate.value = todayISO();
+  $('#btnMarkAllAbsent')?.addEventListener('click',()=>{ const d=$('#attDate').value; state.players.forEach(p=> setAttendance(d,p.id,'Absent')); renderAttendance(); });
+  $('#attSort')?.addEventListener('change', renderAttendance);
+  $('#attDate')?.addEventListener('change', renderAttendance);
 
-  $('#appsScriptUrl').value = getAppsScriptUrl();
-  $('#appsScriptUrl').addEventListener('change', e=>{ localStorage.setItem('jfc_apps_script_url', e.target.value.trim()); });
-  $('#requiredPractices').addEventListener('change', e=>{ state.settings.requiredPractices = Math.max(1, +e.target.value||8); saveLocal(); render(); });
+  const urlInput = $('#appsScriptUrl');
+  if (urlInput) {
+    urlInput.value = getAppsScriptUrl();
+    urlInput.addEventListener('change', e=>{ localStorage.setItem('jfc_apps_script_url', e.target.value.trim()); });
+  }
+  $('#requiredPractices')?.addEventListener('change', e=>{ state.settings.requiredPractices = Math.max(1, +e.target.value||8); saveLocal(); render(); });
 
-  // Quick Add screen buttons
-  const scr = $('#addPlayerScreen');
-  $('#qaClose').addEventListener('click', () => closeQuickAdd());
-  $('#qaCancel').addEventListener('click', () => closeQuickAdd());
-  $('#qaSaveAdd').addEventListener('click', () => saveQuickAdd(false)); // keep screen open
-  $('#qaSaveClose').addEventListener('click', () => saveQuickAdd(true)); // close after save
+  // Quick Add screen buttons (guard in case the HTML isn't present)
+  if (document.getElementById('addPlayerScreen')) {
+    $('#qaClose')?.addEventListener('click', () => closeQuickAdd());
+    $('#qaCancel')?.addEventListener('click', () => closeQuickAdd());
+    $('#qaSaveAdd')?.addEventListener('click', () => saveQuickAdd(false)); // keep screen open
+    $('#qaSaveClose')?.addEventListener('click', () => saveQuickAdd(true));  // close after save
+  }
 
   render();
 });
@@ -281,14 +330,22 @@ function renderPlayers(){
   $('#playersList').innerHTML = ''; $('#playersList').appendChild(list);
 
   const pos = getPositions();
-  const prim = $('#pPrimary'), sec=$('#pSecondary'); prim.innerHTML=''; sec.innerHTML='<option value="">(none)</option>';
-  pos.forEach(k=>{ prim.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); sec.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); });
+  const prim = $('#pPrimary'), sec=$('#pSecondary'); 
+  if (prim && sec) {
+    prim.innerHTML=''; 
+    sec.innerHTML='<option value="">(none)</option>';
+    pos.forEach(k=>{ 
+      prim.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); 
+      sec.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); 
+    });
+  }
 }
 
 // Keep existing dialog for edit/rate
 function openPlayerDialog(player=null, ratingsOnly=false){
   const d = $('#playerDialog');
-  d.classList.add('fullscreen-form'); // ensure compact styles apply
+  if (!d) return;
+  d.classList.add('fullscreen-form'); // (legacy dialog styling if used)
   $('#playerDialogTitle').textContent = player? (ratingsOnly?'Update Ratings':'Edit Player') : 'Add Player';
   $('#pJersey').value = player?.jersey ?? '';
   $('#pFirst').value = player?.first ?? '';
@@ -301,11 +358,12 @@ function openPlayerDialog(player=null, ratingsOnly=false){
   set('rSpeed', r.speed); set('rStrength', r.strength); set('rAgility', r.agility); set('rTackling', r.tackling);
   set('rAwareness', r.awareness); set('rHands', r.hands); set('rThrowing', r.throwing); set('rKicking', r.kicking);
 
-  $$('#playerDialog .grid')[0].style.display = ratingsOnly? 'none':'grid';
+  const basicGrid = $$('#playerDialog .grid')[0];
+  if (basicGrid) basicGrid.style.display = ratingsOnly? 'none':'grid';
 
-  d.showModal();
+  d.showModal?.();
   $('#btnSavePlayer').onclick = ()=>{
-    if(!player && ratingsOnly) { d.close(); return; }
+    if(!player && ratingsOnly) { d.close?.(); return; }
     const data = {
       jersey: parseInt($('#pJersey').value||'0'),
       first: $('#pFirst').value.trim(),
@@ -326,14 +384,14 @@ function openPlayerDialog(player=null, ratingsOnly=false){
     };
     if(player) { Object.assign(player, data); }
     else { state.players.push({id: crypto.randomUUID(), ...data}); }
-    saveLocal(); d.close(); render();
+    saveLocal(); d.close?.(); render();
   };
 }
 
 // ---------- Attendance (with ✓ indicator) ----------
 function renderAttendance(){
-  const date = $('#attDate').value || todayISO();
-  const sort = $('#attSort').value;
+  const date = $('#attDate')?.value || todayISO();
+  const sort = $('#attSort')?.value || 'jersey';
   const list = document.createElement('div'); list.className='list';
 
   let players = state.players.slice();
@@ -362,8 +420,8 @@ function renderAttendance(){
     list.appendChild(row);
   });
 
-  $('#attendanceList').innerHTML='';
-  $('#attendanceList').appendChild(list);
+  const container = $('#attendanceList');
+  if (container) { container.innerHTML=''; container.appendChild(list); }
 }
 
 function renderEligibility(){
@@ -380,13 +438,14 @@ function renderEligibility(){
     tb.appendChild(tr);
   });
   table.appendChild(tb);
-  $('#eligibilityTable').innerHTML=''; $('#eligibilityTable').appendChild(table);
+  const container = $('#eligibilityTable');
+  if (container) { container.innerHTML=''; container.appendChild(table); }
 }
 
 function renderDepth(){
   $('#depthGameDate').value ||= todayISO();
   const d = $('#depthGameDate').value;
-  const only = $('#useEligibleOnly').checked;
+  const only = $('#useEligibleOnly')?.checked ?? true;
   const data = generateDepth(d, only);
 
   const groups = {'Offense':[], 'Defense':[], 'Special Teams':[]};
@@ -407,22 +466,26 @@ function renderDepth(){
     table.appendChild(tb);
     wrapper.appendChild(table);
   });
-  $('#depthChart').innerHTML=''; $('#depthChart').appendChild(wrapper);
+  const container = $('#depthChart');
+  if (container) { container.innerHTML=''; container.appendChild(wrapper); }
 }
 
 function renderSettings(){
-  $('#requiredPractices').value = state.settings.requiredPractices || 8;
+  const rp = $('#requiredPractices');
+  if (rp) rp.value = state.settings.requiredPractices || 8;
   const div = document.createElement('div'); div.className='list';
   POSITIONS.forEach(([k,g])=>{
     const row = document.createElement('div'); row.className='row';
     row.innerHTML = `<div class="pill">${g}</div><div><strong>${k}</strong></div><div></div><div></div>`;
     div.appendChild(row);
   });
-  $('#positionList').innerHTML=''; $('#positionList').appendChild(div);
+  const container = $('#positionList');
+  if (container) { container.innerHTML=''; container.appendChild(div); }
 }
 
 // ---------- Quick Add full-screen ----------
 function openQuickAdd(){
+  if (!document.getElementById('addPlayerScreen')) return;
   $('#qaFirst').value = '';
   $('#qaLast').value  = '';
   $('#qaGrade').value = '';
@@ -430,6 +493,7 @@ function openQuickAdd(){
   $('#qaFirst').focus();
 }
 function closeQuickAdd(){
+  if (!document.getElementById('addPlayerScreen')) return;
   $('#addPlayerScreen').classList.add('hidden');
 }
 function saveQuickAdd(closeAfter){
@@ -445,12 +509,11 @@ function saveQuickAdd(closeAfter){
     ratings: {}
   });
   saveLocal();
-  renderPlayers(); // keep UI snappy
+  renderPlayers();
 
   if (closeAfter) {
     closeQuickAdd();
   } else {
-    // clear for next entry
     $('#qaFirst').value = '';
     $('#qaLast').value  = '';
     $('#qaGrade').value = '';
