@@ -217,27 +217,30 @@ function injectCompactAddStyles(){
   const style = document.createElement('style');
   style.id = 'jfc-compact-add';
   style.textContent = `
-    /* Full-screen shell (kept as-is) */
     .screen.hidden { display:none }
     .screen{position:fixed; inset:0; background:#fff; z-index:1000; display:grid; grid-template-rows:auto 1fr auto}
     .screen-header{display:flex; align-items:center; padding:16px; background:#0b5ed7; color:#fff}
     .screen-header h1{font-size:20px; margin:0}
     .screen-header .icon-btn{margin-left:auto; background:transparent; border:none; color:#fff; font-size:28px; line-height:1; padding:4px 8px; border-radius:8px}
     .screen-body{padding:12px 16px; display:grid; gap:8px}
+    .screen-body label{display:grid; gap:4px; margin:0}
     .screen-footer{display:flex; gap:10px; align-items:center; padding:10px 16px; border-top:1px solid #e7ebf0; background:#f9fafb}
     .screen-footer .spacer{flex:1}
     .screen-footer button{font-size:16px; padding:8px 12px; border-radius:10px}
     .screen-footer .primary{background:#0b5ed7; color:#fff; border:1px solid #0b5ed7}
     .screen-footer .secondary{background:#fff; color:#333; border:1px solid #cfd4dc}
 
-    /* >>> compact input height (force single row) <<< */
+    /* Hammer all min-heights that might be set globally */
+    #addPlayerScreen *{min-height:unset !important}
+
+    /* Default compact height – inline styles will reinforce this too */
     #addPlayerScreen input,
     #addPlayerScreen select,
     #addPlayerScreen textarea{
       height:34px !important;
       min-height:34px !important;
       padding:4px 8px !important;
-      font-size:16px !important;    /* prevents iOS zoom */
+      font-size:16px !important;
       line-height:1.2 !important;
       box-sizing:border-box !important;
       resize:none !important;
@@ -247,23 +250,35 @@ function injectCompactAddStyles(){
       border-radius:8px !important;
       background:#fff !important;
     }
-    #addPlayerScreen label{display:grid; gap:4px; margin:0}
   `;
   document.head.appendChild(style);
 }
 
+
 // ---------- UI ----------
 document.addEventListener('DOMContentLoaded',()=>{
-  injectCompactAddStyles(); // ensure compact fields
+ document.addEventListener('DOMContentLoaded', ()=>{
+  // 1) Inject the compact CSS for the Add Player screen
+  injectCompactAddStyles();
 
-  $$('nav#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
-    $$('nav#tabs button').forEach(b=>b.classList.remove('active'));
+  // 2) Force inline compact styles once at startup (wins vs global CSS)
+  if (typeof forceCompactQuickAddElements === 'function') {
+    forceCompactQuickAddElements();
+  }
+
+  // 3) Your existing tab wiring…
+  $$('nav#tabs button').forEach(btn => btn.addEventListener('click', ()=>{
+    $$('nav#tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
-    $$('.tab').forEach(s=>s.classList.remove('active'));
-    document.querySelector('#tab-'+tab).classList.add('active');
+    $$('.tab').forEach(s => s.classList.remove('active'));
+    document.querySelector('#tab-' + tab).classList.add('active');
     render();
   }));
+
+  // (keep the rest of your existing DOMContentLoaded code here)
+});
+
 
   // OPEN full-screen quick add instead of modal
   const addBtn = $('#btnAddPlayer');
@@ -484,14 +499,46 @@ function renderSettings(){
 }
 
 // ---------- Quick Add full-screen ----------
+
+function forceCompactQuickAddElements() {
+  const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
+  document.querySelectorAll(sel).forEach(el => {
+    // Make textareas behave like single-row inputs too
+    if (el.tagName === 'TEXTAREA') el.setAttribute('rows', '1');
+    // Nuke any big sizing coming from global CSS/framework
+    el.setAttribute('style',
+      'height:34px !important;' +
+      'min-height:34px !important;' +
+      'padding:4px 8px !important;' +
+      'font-size:16px !important;' +   // avoids iOS zoom
+      'line-height:1.2 !important;' +
+      'box-sizing:border-box !important;' +
+      'resize:none !important;' +
+      '-webkit-appearance:none !important;' +
+      'appearance:none !important;' +
+      'border:1px solid #cfd4dc !important;' +
+      'border-radius:8px !important;' +
+      'background:#fff !important;'
+    );
+  });
+}
+
 function openQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
   $('#qaFirst').value = '';
   $('#qaLast').value  = '';
   $('#qaGrade').value = '';
   $('#addPlayerScreen').classList.remove('hidden');
+
+  // Force compact sizing now (after visible)…
+  forceCompactQuickAddElements();
+
+  // …and again on next tick in case layout/CSS loads async
+  requestAnimationFrame(forceCompactQuickAddElements);
+
   $('#qaFirst').focus();
 }
+
 function closeQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
   $('#addPlayerScreen').classList.add('hidden');
