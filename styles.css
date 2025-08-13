@@ -1,0 +1,29 @@
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+header{background:#0b5ed7;color:#fff;padding:10px 12px}
+h1{margin:0;font-size:20px}
+nav#tabs{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+nav#tabs button{border:none;padding:8px 10px;border-radius:8px;background:#0a53be;color:#fff}
+nav#tabs button.active{background:#fff;color:#0b5ed7}
+main{padding:12px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+button{padding:8px 10px;border-radius:8px;border:1px solid #ccc;background:#f6f8fa}
+button.secondary{background:#eef2f7}
+button.danger{background:#fee2e2;color:#b91c1c;border-color:#fecaca}
+.tab{display:none}
+.tab.active{display:block}
+.list{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.row{display:grid;grid-template-columns:60px 1fr 110px 110px;gap:6px;align-items:center;padding:8px;border-bottom:1px solid #eee}
+.row:last-child{border-bottom:none}
+.badge{padding:2px 6px;border-radius:999px;font-size:12px;border:1px solid #ddd}
+.badge.ok{background:#e0f2fe;color:#075985}
+.badge.warn{background:#fef9c3;color:#713f12}
+.badge.no{background:#fee2e2;color:#7f1d1d}
+.pill{border:1px solid #ddd;padding:2px 6px;border-radius:6px;font-size:12px}
+.attBtns button{padding:6px}
+.grid{display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:10px}
+@media (max-width:600px){.row{grid-template-columns:52px 1fr 1fr 1fr} .grid{grid-template-columns:1fr 1fr}}
+dialog{border:1px solid #ddd;border-radius:12px;padding:12px}
+#attendanceList .row{grid-template-columns:60px 1fr 270px}
+#attendanceList .attBtns{display:flex;gap:6px}
+#eligibilityTable table, #depthChart table{width:100%;border-collapse:collapse}
+#eligibilityTable th, #eligibilityTable td, #depthChart th, #depthChart td{border-bottom:1px solid #eee;padding:8px;text-align:left}

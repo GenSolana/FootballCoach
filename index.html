@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jr Football Coach</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b5ed7">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Jr Football Coach</h1>
+    <nav id="tabs">
+      <button data-tab="players" class="active">Players</button>
+      <button data-tab="attendance">Attendance</button>
+      <button data-tab="eligibility">Eligibility</button>
+      <button data-tab="depth">Depth Chart</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="tab-players" class="tab active">
+      <div class="toolbar">
+        <button id="btnCloudLoad" class="secondary">Cloud ⭮ Load</button>
+        <button id="btnCloudSave" class="secondary">Cloud ⭣ Save</button>
+        <button id="btnAddPlayer">+ Add Player</button>
+        <button id="btnExport">Export</button>
+        <input type="file" id="fileImport" accept=".json" style="display:none">
+        <button id="btnImport">Import</button>
+        <button id="btnReset" class="danger">Reset</button>
+      </div>
+      <div id="playersList"></div>
+    </section>
+
+    <section id="tab-attendance" class="tab">
+      <div class="toolbar">
+        <label>Date: <input type="date" id="attDate"></label>
+        <label>Sort:
+          <select id="attSort">
+            <option value="jersey">Jersey</option>
+            <option value="name">Name</option>
+            <option value="position">Position</option>
+          </select>
+        </label>
+        <button id="btnMarkAllAbsent" class="secondary">Mark All Absent</button>
+      </div>
+      <div id="attendanceList"></div>
+    </section>
+
+    <section id="tab-eligibility" class="tab">
+      <div class="toolbar">
+        <label>Game Date: <input type="date" id="gameDate"></label>
+      </div>
+      <div id="eligibilityTable"></div>
+    </section>
+
+    <section id="tab-depth" class="tab">
+      <div class="toolbar">
+        <label>Game Date: <input type="date" id="depthGameDate"></label>
+        <label><input type="checkbox" id="useEligibleOnly" checked> Eligible only</label>
+      </div>
+      <div id="depthChart"></div>
+    </section>
+
+    <section id="tab-settings" class="tab">
+      <h2>Eligibility</h2>
+      <label>Required practices:
+        <input type="number" id="requiredPractices" min="1" value="8">
+      </label>
+      <p><small>Present = 1, Late = 1, Absent = 0</small></p>
+
+      <h2>Cloud Sync</h2>
+      <p><small>Reads from Google Sheets. Writes via Apps Script URL (paste yours below).</small></p>
+      <label>Apps Script URL (write): <input type="url" id="appsScriptUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec"></label>
+      <p><small>Tip: Keep your Sheet shared to “Anyone with the link: Viewer”. The Apps Script handles writes securely.</small></p>
+
+      <h2>Positions</h2>
+      <div id="positionList"></div>
+
+      <h2>Data</h2>
+      <button id="btnExport2">Export Data</button>
+      <input type="file" id="fileImport2" accept=".json" style="display:none">
+      <button id="btnImport2">Import Data</button>
+    </section>
+  </main>
+
+  <dialog id="playerDialog">
+    <form method="dialog">
+      <h3 id="playerDialogTitle">Add Player</h3>
+      <div class="grid">
+        <label>Jersey <input type="number" id="pJersey"></label>
+        <label>First Name <input type="text" id="pFirst"></label>
+        <label>Last Name <input type="text" id="pLast"></label>
+        <label>Grade <input type="text" id="pGrade"></label>
+        <label>Primary Pos
+          <select id="pPrimary"></select>
+        </label>
+        <label>Secondary Pos
+          <select id="pSecondary"></select>
+        </label>
+      </div>
+
+      <h4>Ratings (1–5)</h4>
+      <div class="grid">
+        <label>Speed <input type="number" id="rSpeed" min="1" max="5"></label>
+        <label>Strength <input type="number" id="rStrength" min="1" max="5"></label>
+        <label>Agility <input type="number" id="rAgility" min="1" max="5"></label>
+        <label>Tackling <input type="number" id="rTackling" min="1" max="5"></label>
+        <label>Awareness <input type="number" id="rAwareness" min="1" max="5"></label>
+        <label>Hands <input type="number" id="rHands" min="1" max="5"></label>
+        <label>Throwing <input type="number" id="rThrowing" min="1" max="5"></label>
+        <label>Kicking <input type="number" id="rKicking" min="1" max="5"></label>
+      </div>
+
+      <menu>
+        <button value="cancel">Cancel</button>
+        <button id="btnSavePlayer" value="default">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
