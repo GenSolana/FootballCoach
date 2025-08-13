@@ -54,8 +54,9 @@ const $ = (s)=>document.querySelector(s);
 const $$ = (s)=>Array.from(document.querySelectorAll(s));
 function fmtName(p){ return p.last + ', ' + p.first; }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
-function getPositions(){ return POSITIONS.map(([k,g])=>k); }
+function getPositions(){ return POSITIONS.map(([k])=>k); }
 
+// ---------- Sheets I/O ----------
 function rowsToPlayers(values){
   const [head, ...rows] = values;
   const idx = Object.fromEntries(head.map((h,i)=>[h,i]));
@@ -168,6 +169,7 @@ async function cloudSave(){
   return await res.json();
 }
 
+// ---------- Attendance / Eligibility / Depth ----------
 function getAttendance(date, playerId){
   return state.attendance.find(a=>a.date===date && a.playerId===playerId);
 }
@@ -209,6 +211,7 @@ function generateDepth(refDate, eligibleOnly=true){
   return result;
 }
 
+// ---------- UI ----------
 document.addEventListener('DOMContentLoaded',()=>{
   $$('nav#tabs button').forEach(btn=>btn.addEventListener('click',()=>{
     $$('nav#tabs button').forEach(b=>b.classList.remove('active'));
@@ -219,7 +222,9 @@ document.addEventListener('DOMContentLoaded',()=>{
     render();
   }));
 
-  $('#btnAddPlayer').addEventListener('click',()=>openPlayerDialog());
+  // OPEN full-screen quick add instead of modal
+  $('#btnAddPlayer').addEventListener('click',()=>openQuickAdd());
+
   $('#btnExport').addEventListener('click',()=>exportData());
   $('#btnExport2').addEventListener('click',()=>exportData());
   $('#btnImport').addEventListener('click',()=>$('#fileImport').click());
@@ -239,6 +244,13 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('#appsScriptUrl').value = getAppsScriptUrl();
   $('#appsScriptUrl').addEventListener('change', e=>{ localStorage.setItem('jfc_apps_script_url', e.target.value.trim()); });
   $('#requiredPractices').addEventListener('change', e=>{ state.settings.requiredPractices = Math.max(1, +e.target.value||8); saveLocal(); render(); });
+
+  // Quick Add screen buttons
+  const scr = $('#addPlayerScreen');
+  $('#qaClose').addEventListener('click', () => closeQuickAdd());
+  $('#qaCancel').addEventListener('click', () => closeQuickAdd());
+  $('#qaSaveAdd').addEventListener('click', () => saveQuickAdd(false)); // keep screen open
+  $('#qaSaveClose').addEventListener('click', () => saveQuickAdd(true)); // close after save
 
   render();
 });
@@ -273,16 +285,10 @@ function renderPlayers(){
   pos.forEach(k=>{ prim.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); sec.insertAdjacentHTML('beforeend', `<option value="${k}">${k}</option>`); });
 }
 
+// Keep existing dialog for edit/rate
 function openPlayerDialog(player=null, ratingsOnly=false){
   const d = $('#playerDialog');
-  const simpleAdd = !player && !ratingsOnly; // Quick add mode
-
-  // Title
-  $('#playerDialogTitle').textContent = simpleAdd
-    ? 'Quick Add Player'
-    : (player ? (ratingsOnly ? 'Update Ratings' : 'Edit Player') : 'Add Player');
-
-  // Prefill fields
+  $('#playerDialogTitle').textContent = player? (ratingsOnly?'Update Ratings':'Edit Player') : 'Add Player';
   $('#pJersey').value = player?.jersey ?? '';
   $('#pFirst').value = player?.first ?? '';
   $('#pLast').value = player?.last ?? '';
@@ -294,96 +300,36 @@ function openPlayerDialog(player=null, ratingsOnly=false){
   set('rSpeed', r.speed); set('rStrength', r.strength); set('rAgility', r.agility); set('rTackling', r.tackling);
   set('rAwareness', r.awareness); set('rHands', r.hands); set('rThrowing', r.throwing); set('rKicking', r.kicking);
 
-  // Show/hide fields:
-  // grid[0] = basic info (Jersey, First, Last, Grade, Primary, Secondary)
-  // grid[1] = ratings
-  const grids = $$('#playerDialog .grid');
-  const basicGrid = grids[0];
-  const ratingsGrid = grids[1];
-
-  // Reset all to visible first
-  basicGrid.style.display = 'grid';
-  ratingsGrid.style.display = 'grid';
-  const labels = Array.from(basicGrid.querySelectorAll('label'));
-  labels.forEach(l => l.style.display = '');
-
-  if (ratingsOnly) {
-    // Ratings-only edit
-    basicGrid.style.display = 'none';
-  } else if (simpleAdd) {
-    // Quick add: only First, Last, Grade
-    const [labJersey, labFirst, labLast, labGrade, labPrimary, labSecondary] = labels;
-    labJersey.style.display = 'none';
-    labPrimary.style.display = 'none';
-    labSecondary.style.display = 'none';
-    ratingsGrid.style.display = 'none';
-  }
+  $$('#playerDialog .grid')[0].style.display = ratingsOnly? 'none':'grid';
 
   d.showModal();
-
   $('#btnSavePlayer').onclick = ()=>{
-    if (ratingsOnly && !player) { d.close(); return; }
-
-    if (simpleAdd) {
-      // Only take first, last, grade; everything else defaulted
-      const data = {
-        jersey: 0,
-        first: $('#pFirst').value.trim(),
-        last:  $('#pLast').value.trim(),
-        grade: $('#pGrade').value.trim(),
-        primary: '',
-        secondary: '',
-        ratings: {}
-      };
-      if (!data.first && !data.last) { alert('Please enter a first or last name.'); return; }
-      state.players.push({ id: crypto.randomUUID(), ...data });
-    } else if (ratingsOnly) {
-      // Update ratings only
-      const upd = {
-        ratings: {
-          speed: +($('#rSpeed').value||0),
-          strength: +($('#rStrength').value||0),
-          agility: +($('#rAgility').value||0),
-          tackling: +($('#rTackling').value||0),
-          awareness: +($('#rAwareness').value||0),
-          hands: +($('#rHands').value||0),
-          throwing: +($('#rThrowing').value||0),
-          kicking: +($('#rKicking').value||0),
-        }
-      };
-      Object.assign(player, upd);
-    } else {
-      // Full edit mode (existing behavior)
-      const data = {
-        jersey: parseInt($('#pJersey').value||'0'),
-        first: $('#pFirst').value.trim(),
-        last:  $('#pLast').value.trim(),
-        grade: $('#pGrade').value.trim(),
-        primary: $('#pPrimary').value || '',
-        secondary: $('#pSecondary').value || '',
-        ratings: {
-          speed: +($('#rSpeed').value||0),
-          strength: +($('#rStrength').value||0),
-          agility: +($('#rAgility').value||0),
-          tackling: +($('#rTackling').value||0),
-          awareness: +($('#rAwareness').value||0),
-          hands: +($('#rHands').value||0),
-          throwing: +($('#rThrowing').value||0),
-          kicking: +($('#rKicking').value||0),
-        }
-      };
-      if (player) Object.assign(player, data);
-      else state.players.push({ id: crypto.randomUUID(), ...data });
-    }
-
-    saveLocal();
-    d.close();
-    render();
+    if(!player && ratingsOnly) { d.close(); return; }
+    const data = {
+      jersey: parseInt($('#pJersey').value||'0'),
+      first: $('#pFirst').value.trim(),
+      last: $('#pLast').value.trim(),
+      grade: $('#pGrade').value.trim(),
+      primary: $('#pPrimary').value || '',
+      secondary: $('#pSecondary').value || '',
+      ratings: {
+        speed: +($('#rSpeed').value||0),
+        strength: +($('#rStrength').value||0),
+        agility: +($('#rAgility').value||0),
+        tackling: +($('#rTackling').value||0),
+        awareness: +($('#rAwareness').value||0),
+        hands: +($('#rHands').value||0),
+        throwing: +($('#rThrowing').value||0),
+        kicking: +($('#rKicking').value||0),
+      }
+    };
+    if(player) { Object.assign(player, data); }
+    else { state.players.push({id: crypto.randomUUID(), ...data}); }
+    saveLocal(); d.close(); render();
   };
 }
 
-
-// UPDATED: adds ✓ on selected button so taps are obvious
+// ---------- Attendance (with ✓ indicator) ----------
 function renderAttendance(){
   const date = $('#attDate').value || todayISO();
   const sort = $('#attSort').value;
@@ -398,7 +344,6 @@ function renderAttendance(){
     const rec = state.attendance.find(a=>a.date===date && a.playerId===p.id);
     const s = rec?.status || '';
     const row = document.createElement('div'); row.className='row';
-
     const mark = v => (s === v ? '✓ ' : '');
     row.innerHTML = `
       <div class="pill">#${p.jersey||''}</div>
@@ -409,12 +354,10 @@ function renderAttendance(){
         <button data-val="Absent">${mark('Absent')}Absent</button>
       </div>
     `;
-
     row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
       setAttendance(date, p.id, b.dataset.val);
-      renderAttendance(); // re-render so the ✓ updates
+      renderAttendance();
     }));
-
     list.appendChild(row);
   });
 
@@ -477,6 +420,44 @@ function renderSettings(){
   $('#positionList').innerHTML=''; $('#positionList').appendChild(div);
 }
 
+// ---------- Quick Add full-screen ----------
+function openQuickAdd(){
+  $('#qaFirst').value = '';
+  $('#qaLast').value  = '';
+  $('#qaGrade').value = '';
+  $('#addPlayerScreen').classList.remove('hidden');
+  $('#qaFirst').focus();
+}
+function closeQuickAdd(){
+  $('#addPlayerScreen').classList.add('hidden');
+}
+function saveQuickAdd(closeAfter){
+  const first = $('#qaFirst').value.trim();
+  const last  = $('#qaLast').value.trim();
+  const grade = $('#qaGrade').value.trim();
+  if (!first && !last) { alert('Please enter a first or last name.'); return; }
+  state.players.push({
+    id: crypto.randomUUID(),
+    jersey: 0,
+    first, last, grade,
+    primary: '', secondary: '',
+    ratings: {}
+  });
+  saveLocal();
+  renderPlayers(); // keep UI snappy
+
+  if (closeAfter) {
+    closeQuickAdd();
+  } else {
+    // clear for next entry
+    $('#qaFirst').value = '';
+    $('#qaLast').value  = '';
+    $('#qaGrade').value = '';
+    $('#qaFirst').focus();
+  }
+}
+
+// ---------- Export / Import ----------
 function exportData(){
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
