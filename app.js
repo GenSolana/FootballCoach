@@ -292,16 +292,14 @@ function injectCompactAddStyles(){
 
 
 // ---------- UI ----------
-document.addEventListener('DOMContentLoaded',()=>{
- document.addEventListener('DOMContentLoaded', ()=>{
-  injectCompactAddStyles();              // add the iOS look
-if (typeof forceCompactQuickAddElements === 'function') {
-  forceCompactQuickAddElements();      // inline fallback (beats stubborn CSS)
-}
+document.addEventListener('DOMContentLoaded', () => {
+  // 1) Compact iOS look for Add Player
+  if (typeof injectCompactAddStyles === 'function') injectCompactAddStyles();
+  if (typeof applyIOSQuickAddTheme === 'function') applyIOSQuickAddTheme();
+  if (typeof forceCompactQuickAddElements === 'function') forceCompactQuickAddElements();
 
-
-  // 3) Your existing tab wiring…
-  $$('nav#tabs button').forEach(btn => btn.addEventListener('click', ()=>{
+  // 2) Your existing tab wiring
+  $$('nav#tabs button').forEach(btn => btn.addEventListener('click', () => {
     $$('nav#tabs button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
@@ -310,8 +308,10 @@ if (typeof forceCompactQuickAddElements === 'function') {
     render();
   }));
 
-  // (keep the rest of your existing DOMContentLoaded code here)
+  // 3) ...keep the rest of your existing initialization here
+  // (buttons, cloud load/save, attendance hooks, etc.)
 });
+
 
 
   // OPEN full-screen quick add instead of modal
@@ -557,18 +557,139 @@ function forceCompactQuickAddElements() {
   });
 }
 
+// Force single-row sizing on all fields inside the Add Player screen
+function forceCompactQuickAddElements() {
+  const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
+  document.querySelectorAll(sel).forEach(el => {
+    if (el.tagName === 'TEXTAREA') el.setAttribute('rows', '1');
+    el.style.height = '40px';
+    el.style.minHeight = '40px';
+    el.style.padding = '8px 12px';
+    el.style.fontSize = '16px';          // avoids iOS zoom
+    el.style.lineHeight = '1.2';
+    el.style.boxSizing = 'border-box';
+    el.style.resize = 'none';
+    el.style.webkitAppearance = 'none';
+    el.style.appearance = 'none';
+    el.style.border = '1px solid #d9d9e0';
+    el.style.borderRadius = '10px';
+    el.style.background = '#fff';
+    el.style.boxShadow = 'none';
+  });
+}
+
+// Apply iOS-like header/body/footer styling using inline styles
+function applyIOSQuickAddTheme(){
+  const scr = document.getElementById('addPlayerScreen');
+  if (!scr) return;
+
+  // Header
+  const header = scr.querySelector('.screen-header');
+  if (header) {
+    header.style.position = 'sticky';
+    header.style.top = '0';
+    header.style.display = 'flex';
+    header.style.alignItems = 'center';
+    header.style.justifyContent = 'center';
+    header.style.padding = '12px 16px';
+    header.style.background = '#fff';
+    header.style.color = '#111';
+    header.style.borderBottom = '1px solid #e5e5ea';
+  }
+  const title = header?.querySelector('h1');
+  if (title) {
+    title.style.margin = '0';
+    title.style.fontSize = '18px';
+    title.style.fontWeight = '600';
+    title.style.letterSpacing = '.2px';
+  }
+  const close = header?.querySelector('.icon-btn, #qaClose');
+  if (close) {
+    close.style.position = 'absolute';
+    close.style.right = '12px';
+    close.style.top = '8px';
+    close.style.width = '32px';
+    close.style.height = '32px';
+    close.style.lineHeight = '28px';
+    close.style.textAlign = 'center';
+    close.style.borderRadius = '50%';
+    close.style.border = '1px solid #e5e5ea';
+    close.style.background = '#fff';
+    close.style.color = '#111';
+    close.style.fontSize = '20px';
+    close.style.padding = '0';
+  }
+
+  // Body
+  const body = scr.querySelector('.screen-body');
+  if (body) {
+    body.style.padding = '12px 16px 16px';
+    body.style.display = 'grid';
+    body.style.gap = '12px';
+    body.style.maxWidth = '640px';
+    body.style.margin = '0 auto';
+  }
+  body?.querySelectorAll('label').forEach(l=>{
+    l.style.display = 'grid';
+    l.style.gap = '6px';
+    l.style.margin = '0';
+  });
+  body?.querySelectorAll('label > span').forEach(s=>{
+    s.style.fontSize = '14px';
+    s.style.fontWeight = '600';
+    s.style.color = '#222';
+  });
+
+  // Footer
+  const footer = scr.querySelector('.screen-footer');
+  if (footer) {
+    footer.style.position = 'sticky';
+    footer.style.bottom = '0';
+    footer.style.display = 'flex';
+    footer.style.gap = '10px';
+    footer.style.alignItems = 'center';
+    footer.style.padding = '10px 16px';
+    footer.style.borderTop = '1px solid #e5e5ea';
+    footer.style.background = '#fafafa';
+    footer.style.paddingBottom = 'calc(10px + env(safe-area-inset-bottom))';
+  }
+  footer?.querySelectorAll('button').forEach(b=>{
+    b.style.fontSize = '16px';
+    b.style.padding = '10px 14px';
+    b.style.borderRadius = '12px';
+    b.style.border = '1px solid #cfd4dc';
+  });
+  footer?.querySelectorAll('.primary').forEach(b=>{
+    b.style.background = '#0b5ed7';
+    b.style.color = '#fff';
+    b.style.borderColor = '#0b5ed7';
+  });
+  footer?.querySelectorAll('.secondary').forEach(b=>{
+    b.style.background = '#fff';
+    b.style.color = '#111';
+  });
+
+  // Inputs
+  forceCompactQuickAddElements();
+}
+
 
 function openQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
-  $('#qaFirst').value=''; $('#qaLast').value=''; $('#qaGrade').value='';
+  $('#qaFirst').value = '';
+  $('#qaLast').value  = '';
+  $('#qaGrade').value = '';
   $('#addPlayerScreen').classList.remove('hidden');
 
-  // force sizing now and on next tick
-  forceCompactQuickAddElements();
-  requestAnimationFrame(forceCompactQuickAddElements);
+  // Apply iOS look + compact fields now and on next frame
+  applyIOSQuickAddTheme();
+  requestAnimationFrame(()=> {
+    applyIOSQuickAddTheme();
+  });
 
   $('#qaFirst').focus();
 }
+
 
 function closeQuickAdd(){
   if (!document.getElementById('addPlayerScreen')) return;
