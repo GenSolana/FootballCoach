@@ -288,6 +288,7 @@ function renderPlayers(){
 // Keep existing dialog for edit/rate
 function openPlayerDialog(player=null, ratingsOnly=false){
   const d = $('#playerDialog');
+  d.classList.add('fullscreen-form'); // ensure compact styles apply
   $('#playerDialogTitle').textContent = player? (ratingsOnly?'Update Ratings':'Edit Player') : 'Add Player';
   $('#pJersey').value = player?.jersey ?? '';
   $('#pFirst').value = player?.first ?? '';
