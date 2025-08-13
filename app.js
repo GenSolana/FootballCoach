@@ -66,6 +66,16 @@ function loadLocal(){ const raw = localStorage.getItem('jfc_state'); if(!raw) re
 function saveLocal(){ localStorage.setItem('jfc_state', JSON.stringify(state)); }
 let state = loadLocal();
 
+// ----- NEW: collapse dup attendance to one per (date|playerId)
+function dedupeAttendance(){
+  const map = new Map();
+  state.attendance.forEach(a=>{
+    map.set(`${a.date}|${a.playerId}`, { ...a }); // last one wins
+  });
+  state.attendance = Array.from(map.values());
+}
+dedupeAttendance(); // clean any old local data on load
+
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 function fmtName(p){ return p.last + ', ' + p.first; }
@@ -137,9 +147,14 @@ async function cloudLoad(){
   const byJersey = Object.fromEntries(players.map(p=>[p.jersey,p]));
   const attendance = attendanceRows.map(a=>({date:a.date, playerId:byJersey[a.jersey]?.id||null, status:a.status, note:a.note})).filter(a=>a.playerId);
 
-  state.players = players; state.attendance = attendance; state.ratings = ratingsRows; saveLocal();
+  state.players = players;
+  state.attendance = attendance;
+  state.ratings = ratingsRows;
+  dedupeAttendance(); // ensure one record per date|player
+  saveLocal();
 }
 async function cloudSave(){
+  dedupeAttendance(); // safety before upload
   const url = getAppsScriptUrl(); if(!url) throw new Error('Apps Script URL not set (Settings tab)');
   const playersRows = playersToRows(state.players);
   const byId = Object.fromEntries(state.players.map(p=>[p.id,p]));
@@ -161,6 +176,7 @@ function setAttendance(date, playerId, status){
   let rec = getAttendance(date, playerId);
   if(!rec){ rec = {date, playerId, status, note:''}; state.attendance.push(rec); }
   else { rec.status = status; }
+  dedupeAttendance(); // enforce uniqueness immediately
   saveLocal();
 }
 function attendedCount(playerId, refDate){
@@ -321,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#fileImport')?.addEventListener('change', importData);
   $('#fileImport2')?.addEventListener('change', importData);
   $('#btnReset')?.addEventListener('click', ()=>{
-    if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state = loadLocal(); render(); }
+    if(confirm('Clear all local data?')){ localStorage.removeItem('jfc_state'); state = loadLocal(); dedupeAttendance(); render(); }
   });
 
   $('#btnCloudLoad')?.addEventListener('click', async ()=>{
@@ -533,7 +549,14 @@ function exportData(){
 async function importData(e){
   const file = e.target.files[0]; if(!file) return;
   const text = await file.text();
-  try{ state = JSON.parse(text); saveLocal(); render(); } catch(err){ alert('Import failed: '+err.message); }
+  try{
+    state = JSON.parse(text);
+    dedupeAttendance(); // clean imported data
+    saveLocal();
+    render();
+  } catch(err){
+    alert('Import failed: '+err.message);
+  }
   e.target.value='';
 }
 
