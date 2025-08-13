@@ -180,18 +180,34 @@ function injectCompactAddStyles(){
   style.textContent = `
     .screen.hidden{display:none}
     .screen{position:fixed;inset:0;background:#fff;z-index:1000;display:grid;grid-template-rows:auto 1fr auto}
+
+    /* Header */
     .screen-header{position:sticky;top:0;display:flex;align-items:center;justify-content:center;padding:12px 16px;background:#fff;color:#111;border-bottom:1px solid #e5e5ea}
     .screen-header h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.2px}
     .screen-header .icon-btn{position:absolute;right:12px;top:8px;width:32px;height:32px;line-height:28px;text-align:center;border-radius:50%;border:1px solid #e5e5ea;background:#fff;color:#111;font-size:20px;padding:0}
-    .screen-body{padding:12px 16px 16px;display:grid;gap:12px;max-width:640px;margin:0 auto}
-    .screen-body label{display:grid;gap:6px;margin:0}
+
+    /* Body — pack fields at the top, don't stretch rows */
+    .screen-body{
+      padding:12px 16px 16px;
+      display:grid;
+      gap:12px;
+      max-width:640px;
+      margin:0 auto;
+      align-content:start;         /* <— key line */
+      grid-auto-rows:max-content;  /* <— key line */
+    }
+    .screen-body label{display:grid;gap:6px;margin:0;align-self:start}
     .screen-body label span{font-size:14px;font-weight:600;color:#222}
+
+    /* Compact single-row inputs */
     #addPlayerScreen input,#addPlayerScreen select,#addPlayerScreen textarea{
       height:40px !important;min-height:40px !important;padding:8px 12px !important;font-size:16px !important;line-height:1.2 !important;
       box-sizing:border-box !important;resize:none !important;-webkit-appearance:none !important;appearance:none !important;
       border:1px solid #d9d9e0 !important;border-radius:10px !important;background:#fff !important;box-shadow:none !important
     }
     #addPlayerScreen *{min-height:unset !important}
+
+    /* Footer */
     .screen-footer{position:sticky;bottom:0;display:flex;gap:10px;align-items:center;padding:10px 16px;border-top:1px solid #e5e5ea;background:#fafafa;padding-bottom:calc(10px + env(safe-area-inset-bottom))}
     .screen-footer .spacer{flex:1}
     .screen-footer button{font-size:16px;padding:10px 14px;border-radius:12px;border:1px solid #cfd4dc}
@@ -200,6 +216,7 @@ function injectCompactAddStyles(){
   `;
   document.head.appendChild(style);
 }
+
 function forceCompactQuickAddElements(){
   const sel = '#addPlayerScreen input, #addPlayerScreen textarea, #addPlayerScreen select';
   document.querySelectorAll(sel).forEach(el=>{
