@@ -138,3 +138,10 @@ dialog{border:1px solid #ddd;border-radius:12px;padding:12px}
 #playerDialog.fullscreen-form .form-group {
   margin-bottom: 6px !important;
 }
+
+#addPlayerScreen .screen-body{
+  align-content: start;
+  grid-auto-rows: max-content;
+}
+#addPlayerScreen .screen-body label{ align-self: start; }
+
